@@ -2,6 +2,10 @@ package com.acikek.mannequin.util;
 
 public interface SeveringEntity {
 
+	boolean mannequin$canSever();
+
+	void mannequin$setCanSever(boolean canSever);
+
 	boolean mannequin$isSevering();
 
 	void mannequin$setSevering(boolean severing);
@@ -16,6 +20,7 @@ public interface SeveringEntity {
 	}
 
 	default void mannequin$stopSevering() {
+		mannequin$setCanSever(false);
 		mannequin$setSevering(false);
 		mannequin$setSeveringTicksRemaining(0);
 	}

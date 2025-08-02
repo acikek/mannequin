@@ -19,6 +19,9 @@ public abstract class LivingEntityMixin implements SeveringEntity {
 	public abstract void releaseUsingItem();
 
 	@Unique
+	private boolean canSever;
+
+	@Unique
 	private boolean severing;
 
 	@Unique
@@ -42,6 +45,16 @@ public abstract class LivingEntityMixin implements SeveringEntity {
 	@Inject(method = "stopUsingItem", at = @At("HEAD"))
 	private void mannequin$_stop(CallbackInfo ci) {
 		mannequin$stopSevering();
+	}
+
+	@Override
+	public boolean mannequin$canSever() {
+		return canSever;
+	}
+
+	@Override
+	public void mannequin$setCanSever(boolean canSever) {
+		this.canSever = canSever;
 	}
 
 	@Override

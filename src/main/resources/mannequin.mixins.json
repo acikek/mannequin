@@ -13,6 +13,9 @@
 		"requireAnnotations": true
 	},
 	"client": [
+		"client.ItemInHandRendererMixin",
+		"client.LocalPlayerMixin",
 		"client.MinecraftMixin",
+		"client.PlayerModelMixin"
 	]
 }

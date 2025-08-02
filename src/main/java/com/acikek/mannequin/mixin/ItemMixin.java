@@ -1,5 +1,7 @@
 package com.acikek.mannequin.mixin;
 
+import com.acikek.mannequin.client.MannequinClient;
+import com.acikek.mannequin.util.SeveringEntity;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,9 +35,10 @@ public class ItemMixin {
 
 	@Inject(method = "use", at = @At("HEAD"), cancellable = true)
 	private void mannequin$_c(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResult> cir) {
-		if (((Item) (Object) this) instanceof AxeItem) {
+		if (((Item) (Object) this) instanceof AxeItem && player instanceof SeveringEntity severingEntity) {
+			severingEntity.mannequin$setCanSever(true);
 			player.startUsingItem(interactionHand);
-			cir.setReturnValue(InteractionResult.SUCCESS);
+			cir.setReturnValue(InteractionResult.CONSUME);
 		}
 	}
 }
