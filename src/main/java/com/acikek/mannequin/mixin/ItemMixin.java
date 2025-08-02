@@ -38,10 +38,11 @@ public class ItemMixin {
 	private void mannequin$_c(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResult> cir) {
 		if (((Item) (Object) this) instanceof AxeItem && player instanceof SeveringEntity severingEntity) {
 			player.startUsingItem(interactionHand);
-			if (severingEntity.mannequin$getSeveredLimbs() != null && severingEntity.mannequin$getSeveredLimbs().contains(SeveredLimb.resolve(player, player.getItemInHand(interactionHand), interactionHand))) {
-				return;
-			}
 			severingEntity.mannequin$setCanSever(true);
+			var severingLimb = SeveredLimb.resolve(player, player.getItemInHand(interactionHand), interactionHand);
+			if (severingEntity.mannequin$getSeveredLimbs() == null || !severingEntity.mannequin$getSeveredLimbs().contains(severingLimb)) {
+				severingEntity.mannequin$setSeveringLimb(severingLimb);
+			}
 			cir.setReturnValue(InteractionResult.CONSUME);
 		}
 	}

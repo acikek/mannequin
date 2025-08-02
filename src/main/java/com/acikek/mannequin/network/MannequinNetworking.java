@@ -29,12 +29,12 @@ public class MannequinNetworking {
 		ServerPlayNetworking.registerGlobalReceiver(UpdateSevering.TYPE, (payload, context) -> {
 			if (context.player().isUsingItem() && context.player() instanceof SeveringEntity severingEntity) {
 				if (payload.active()) {
-					if (!severingEntity.mannequin$isSevering()) {
+					if (!severingEntity.mannequin$isSevering() && severingEntity.mannequin$getSeveringLimb() != null) {
 						severingEntity.mannequin$startSevering(20);
 					}
 				}
 				else {
-					severingEntity.mannequin$stopSevering();
+					context.player().releaseUsingItem();
 				}
 			}
 		});

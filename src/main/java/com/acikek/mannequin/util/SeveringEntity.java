@@ -8,6 +8,10 @@ public interface SeveringEntity {
 
 	void mannequin$setCanSever(boolean canSever);
 
+	SeveredLimb mannequin$getSeveringLimb();
+
+	void mannequin$setSeveringLimb(SeveredLimb severingLimb);
+
 	boolean mannequin$isSevering();
 
 	void mannequin$setSevering(boolean severing);
@@ -25,6 +29,7 @@ public interface SeveringEntity {
 
 	default void mannequin$stopSevering() {
 		mannequin$setCanSever(false);
+		mannequin$setSeveringLimb(null);
 		mannequin$setSevering(false);
 		mannequin$setSeveringTicksRemaining(0);
 	}

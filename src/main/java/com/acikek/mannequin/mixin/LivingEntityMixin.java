@@ -3,10 +3,7 @@ package com.acikek.mannequin.mixin;
 import com.acikek.mannequin.util.SeveredLimb;
 import com.acikek.mannequin.util.SeveringEntity;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -29,17 +26,11 @@ public abstract class LivingEntityMixin implements SeveringEntity {
 	@Shadow
 	public abstract void releaseUsingItem();
 
-	@Shadow
-	public abstract ItemStack getUseItem();
-
-	@Shadow
-	public abstract InteractionHand getUsedItemHand();
-
-	@Shadow
-	public abstract HumanoidArm getMainArm();
-
 	@Unique
 	private boolean canSever;
+
+	@Unique
+	private SeveredLimb severingLimb;
 
 	@Unique
 	private boolean severing;
@@ -66,9 +57,7 @@ public abstract class LivingEntityMixin implements SeveringEntity {
 		if (severedLimbs == null) {
 			severedLimbs = new ArrayList<>();
 		}
-		severedLimbs.add(SeveredLimb.resolve((LivingEntity) (Object) this, getUseItem(), getUsedItemHand()));
-		severing = false;
-		severingTicksRemaining = 0;
+		severedLimbs.add(severingLimb);
 		releaseUsingItem();
 		System.out.println(severedLimbs);
 	}
@@ -86,6 +75,16 @@ public abstract class LivingEntityMixin implements SeveringEntity {
 	@Override
 	public void mannequin$setCanSever(boolean canSever) {
 		this.canSever = canSever;
+	}
+
+	@Override
+	public SeveredLimb mannequin$getSeveringLimb() {
+		return severingLimb;
+	}
+
+	@Override
+	public void mannequin$setSeveringLimb(SeveredLimb severingLimb) {
+		this.severingLimb = severingLimb;
 	}
 
 	@Override

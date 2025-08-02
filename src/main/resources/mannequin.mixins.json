@@ -16,6 +16,8 @@
 		"client.ItemInHandRendererMixin",
 		"client.LocalPlayerMixin",
 		"client.MinecraftMixin",
-		"client.PlayerModelMixin"
+		"client.PlayerModelMixin",
+		"client.PlayerRendererMixin",
+		"client.PlayerRenderStateMixin"
 	]
 }

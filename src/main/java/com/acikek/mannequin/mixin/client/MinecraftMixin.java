@@ -31,12 +31,12 @@ public class MinecraftMixin {
 		if (!(player instanceof SeveringEntity severingEntity)) {
 			return;
 		}
-		if (options.keyAttack.isDown() && !severingEntity.mannequin$isSevering()) {
+		if (options.keyAttack.isDown() && !severingEntity.mannequin$isSevering() && severingEntity.mannequin$getSeveringLimb() != null) {
 			severingEntity.mannequin$startSevering(20);
 			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(true));
 		}
 		if (!options.keyAttack.isDown() && severingEntity.mannequin$isSevering()) {
-			severingEntity.mannequin$stopSevering();
+			player.releaseUsingItem();
 			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(false));
 		}
 	}
