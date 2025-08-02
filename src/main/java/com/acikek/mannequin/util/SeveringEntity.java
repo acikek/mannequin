@@ -1,5 +1,7 @@
 package com.acikek.mannequin.util;
 
+import java.util.List;
+
 public interface SeveringEntity {
 
 	boolean mannequin$canSever();
@@ -13,6 +15,8 @@ public interface SeveringEntity {
 	int mannequin$getSeveringTicksRemaining();
 
 	void mannequin$setSeveringTicksRemaining(int ticks);
+
+	List<SeveredLimb> mannequin$getSeveredLimbs();
 
 	default void mannequin$startSevering(int ticks) {
 		mannequin$setSevering(true);
