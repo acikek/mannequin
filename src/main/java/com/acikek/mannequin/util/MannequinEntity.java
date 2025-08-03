@@ -1,16 +1,18 @@
 package com.acikek.mannequin.util;
 
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
-public interface SeveringEntity {
+public interface MannequinEntity {
+
+	MannequinLimbs mannequin$getLimbs();
 
 	boolean mannequin$canSever();
 
 	void mannequin$setCanSever(boolean canSever);
 
-	SeveredLimb mannequin$getSeveringLimb();
+	@Nullable MannequinLimb mannequin$getLimbToSever();
 
-	void mannequin$setSeveringLimb(SeveredLimb severingLimb);
+	void mannequin$setLimbToSever(MannequinLimb limb);
 
 	boolean mannequin$isSevering();
 
@@ -20,8 +22,6 @@ public interface SeveringEntity {
 
 	void mannequin$setSeveringTicksRemaining(int ticks);
 
-	List<SeveredLimb> mannequin$getSeveredLimbs();
-
 	default void mannequin$startSevering(int ticks) {
 		mannequin$setSevering(true);
 		mannequin$setSeveringTicksRemaining(ticks);
@@ -29,7 +29,7 @@ public interface SeveringEntity {
 
 	default void mannequin$stopSevering() {
 		mannequin$setCanSever(false);
-		mannequin$setSeveringLimb(null);
+		mannequin$setLimbToSever(null);
 		mannequin$setSevering(false);
 		mannequin$setSeveringTicksRemaining(0);
 	}

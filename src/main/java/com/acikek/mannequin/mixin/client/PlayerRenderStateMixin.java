@@ -1,26 +1,25 @@
 package com.acikek.mannequin.mixin.client;
 
-import com.acikek.mannequin.util.SeveredLimb;
-import com.acikek.mannequin.util.SeveringRenderState;
+import com.acikek.mannequin.util.MannequinLimbs;
+import com.acikek.mannequin.util.MannequinRenderState;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-import java.util.List;
-
 @Mixin(PlayerRenderState.class)
-public class PlayerRenderStateMixin implements SeveringRenderState {
+public class PlayerRenderStateMixin implements MannequinRenderState {
 
 	@Unique
-	private List<SeveredLimb> severedLimbs;
+	private @Nullable MannequinLimbs limbs;
 
 	@Override
-	public List<SeveredLimb> mannequin$getSeveredLimbs() {
-		return severedLimbs;
+	public @Nullable MannequinLimbs mannequin$getLimbs() {
+		return limbs;
 	}
 
 	@Override
-	public void mannequin$setSeveredLimbs(List<SeveredLimb> severedLimbs) {
-		this.severedLimbs = severedLimbs;
+	public void mannequin$setLimbs(MannequinLimbs limbs) {
+		this.limbs = limbs;
 	}
 }

@@ -1,7 +1,6 @@
 package com.acikek.mannequin.mixin.client;
 
-import com.acikek.mannequin.client.MannequinClient;
-import com.acikek.mannequin.util.SeveringEntity;
+import com.acikek.mannequin.util.MannequinEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.world.InteractionHand;
@@ -15,7 +14,7 @@ public class ItemInHandRendererMixin {
 
 	@Inject(method = "itemUsed", at = @At("HEAD"), cancellable = true)
 	private void mannequin$cancelItemUsedAnimation(InteractionHand interactionHand, CallbackInfo ci) {
-		if (Minecraft.getInstance().player instanceof SeveringEntity severingEntity && severingEntity.mannequin$canSever()) {
+		if (Minecraft.getInstance().player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$canSever()) {
 			ci.cancel();
 		}
 	}
