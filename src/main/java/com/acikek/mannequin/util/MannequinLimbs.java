@@ -1,5 +1,6 @@
 package com.acikek.mannequin.util;
 
+import com.acikek.mannequin.Mannequin;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
@@ -24,5 +25,16 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 			return right ? leftArm : rightArm;
 		}
 		return torso; // TODO
+	}
+
+	// TODO
+	public ItemStack createLimbStack(MannequinLimb limb) {
+		if (limb == leftLeg || limb == rightLeg) {
+			return Mannequin.LEG_ITEM.getDefaultInstance();
+		}
+		if (limb == leftArm || limb == rightArm) {
+			return Mannequin.ARM_ITEM.getDefaultInstance();
+		}
+		return ItemStack.EMPTY;
 	}
 }

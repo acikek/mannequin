@@ -5,6 +5,7 @@ import com.acikek.mannequin.util.MannequinLimbs;
 import com.acikek.mannequin.util.MannequinEntity;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -63,6 +64,10 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			return;
 		}
 		limbToSever.severed = true;
+		var stack = limbs.createLimbStack(limbToSever);
+		if (!stack.isEmpty() && ((LivingEntity) (Object) this) instanceof Player player) {
+			player.addItem(stack);
+		}
 		getUseItem().hurtAndBreak(5, (LivingEntity) (Object) this, getUsedItemHand());
 		releaseUsingItem();
 	}
