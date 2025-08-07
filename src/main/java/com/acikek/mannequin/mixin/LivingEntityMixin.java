@@ -1,9 +1,13 @@
 package com.acikek.mannequin.mixin;
 
+import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.util.MannequinLimb;
 import com.acikek.mannequin.util.MannequinLimbs;
 import com.acikek.mannequin.util.MannequinEntity;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +37,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	public abstract InteractionHand getUsedItemHand();
 
 	@Unique
-	private MannequinLimbs limbs = new MannequinLimbs();
+	private final MannequinLimbs limbs = new MannequinLimbs();
 
 	@Unique
 	private boolean canSever;
@@ -70,11 +74,20 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		}
 		getUseItem().hurtAndBreak(5, (LivingEntity) (Object) this, getUsedItemHand());
 		releaseUsingItem();
+		((LivingEntity) (Object) this).refreshDimensions();
 	}
 
 	@Inject(method = "stopUsingItem", at = @At("HEAD"))
 	private void mannequin$cancelSevering(CallbackInfo ci) {
 		mannequin$stopSevering();
+	}
+
+	@ModifyReturnValue(method = "getDimensions", at = @At("RETURN"))
+	private EntityDimensions mannequin$resize(EntityDimensions original) {
+		if (limbs.leftLeg().severed && limbs.rightLeg().severed) {
+			return Mannequin.LEGLESS_DIMENSIONS;
+		}
+		return original;
 	}
 
 	@Override

@@ -3,11 +3,7 @@ package com.acikek.mannequin;
 import com.acikek.mannequin.network.MannequinNetworking;
 import net.fabricmc.api.ModInitializer;
 
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import org.slf4j.Logger;
@@ -21,6 +17,8 @@ public class Mannequin implements ModInitializer {
 
 	public static final Item ARM_ITEM = Items.APPLE;
 	public static final Item LEG_ITEM = Items.CARROT;
+
+	public static final EntityDimensions LEGLESS_DIMENSIONS = EntityDimensions.scalable(0.6F, 1.1F);
 
 	@Override
 	public void onInitialize() {
