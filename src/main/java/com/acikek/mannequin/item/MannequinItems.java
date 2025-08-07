@@ -15,7 +15,7 @@ public class MannequinItems {
 	public static final Item ARM = new Item(new Item.Properties().setId(ARM_KEY));
 
 	public static final ResourceKey<Item> LEG_KEY = ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "leg"));
-	public static final LegItem LEG = new LegItem(LegItem.PROPERTIES.setId(ARM_KEY));
+	public static final LegItem LEG = new LegItem(LegItem.PROPERTIES.setId(LEG_KEY));
 
 	public static void register() {
 		Registry.register(BuiltInRegistries.ITEM, ARM_KEY, ARM);

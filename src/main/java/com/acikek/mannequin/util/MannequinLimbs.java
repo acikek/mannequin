@@ -12,7 +12,13 @@ import net.minecraft.world.item.ItemStack;
 public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, MannequinLimb leftArm, MannequinLimb rightArm, MannequinLimb torso) {
 
 	public MannequinLimbs() {
-		this(new MannequinLimb(), new MannequinLimb(), new MannequinLimb(), new MannequinLimb(), new MannequinLimb());
+		this(
+			new MannequinLimb(LimbType.LEG, LimbOrientation.LEFT),
+			new MannequinLimb(LimbType.LEG, LimbOrientation.RIGHT),
+			new MannequinLimb(LimbType.ARM, LimbOrientation.LEFT),
+			new MannequinLimb(LimbType.ARM, LimbOrientation.RIGHT),
+			new MannequinLimb(LimbType.TORSO, LimbOrientation.NONE)
+		);
 	}
 
 	public MannequinLimb resolve(LivingEntity entity, ItemStack stack, InteractionHand hand) {
@@ -27,19 +33,5 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 			return right ? leftArm : rightArm;
 		}
 		return torso; // TODO
-	}
-
-	// TODO
-	public ItemStack createLimbStack(Player player, MannequinLimb limb) {
-		if (limb == leftLeg || limb == rightLeg) {
-			var stack = MannequinItems.LEG.getDefaultInstance();
-			stack.set(LimbOrientation.DATA_COMPONENT_TYPE, limb == leftLeg ? LimbOrientation.LEFT : LimbOrientation.RIGHT);
-			stack.set(LegItem.SOURCE_COMPONENT_TYPE, player.getName());
-			return stack;
-		}
-		if (limb == leftArm || limb == rightArm) {
-			return MannequinItems.ARM.getDefaultInstance();
-		}
-		return ItemStack.EMPTY;
 	}
 }

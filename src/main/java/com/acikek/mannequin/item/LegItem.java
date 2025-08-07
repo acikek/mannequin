@@ -2,6 +2,7 @@ package com.acikek.mannequin.item;
 
 import com.acikek.mannequin.util.LimbOrientation;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.item.Item;
