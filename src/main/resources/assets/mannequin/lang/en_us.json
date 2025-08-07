@@ -1,0 +1,7 @@
+{
+	"limbOrientation.mannequin.none": "Severed",
+	"limbOrientation.mannequin.left": "Left",
+	"limbOrientation.mannequin.right": "Right",
+	"item.mannequin.leg": "%s Leg",
+	"item.mannequin.leg.named": "%s's %s Leg"
+}

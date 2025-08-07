@@ -1,10 +1,12 @@
 package com.acikek.mannequin.util;
 
-import com.acikek.mannequin.Mannequin;
+import com.acikek.mannequin.item.LegItem;
+import com.acikek.mannequin.item.MannequinItems;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, MannequinLimb leftArm, MannequinLimb rightArm, MannequinLimb torso) {
@@ -28,12 +30,15 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 	}
 
 	// TODO
-	public ItemStack createLimbStack(MannequinLimb limb) {
+	public ItemStack createLimbStack(Player player, MannequinLimb limb) {
 		if (limb == leftLeg || limb == rightLeg) {
-			return Mannequin.LEG_ITEM.getDefaultInstance();
+			var stack = MannequinItems.LEG.getDefaultInstance();
+			stack.set(LimbOrientation.DATA_COMPONENT_TYPE, limb == leftLeg ? LimbOrientation.LEFT : LimbOrientation.RIGHT);
+			stack.set(LegItem.SOURCE_COMPONENT_TYPE, player.getName());
+			return stack;
 		}
 		if (limb == leftArm || limb == rightArm) {
-			return Mannequin.ARM_ITEM.getDefaultInstance();
+			return MannequinItems.ARM.getDefaultInstance();
 		}
 		return ItemStack.EMPTY;
 	}

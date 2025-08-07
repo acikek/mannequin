@@ -68,9 +68,11 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			return;
 		}
 		limbToSever.severed = true;
-		var stack = limbs.createLimbStack(limbToSever);
-		if (!stack.isEmpty() && ((LivingEntity) (Object) this) instanceof Player player) {
-			player.addItem(stack);
+		if (((LivingEntity) (Object) this) instanceof Player player) {
+			var stack = limbs.createLimbStack(player, limbToSever);
+			if (!stack.isEmpty()) {
+				player.addItem(stack);
+			}
 		}
 		getUseItem().hurtAndBreak(5, (LivingEntity) (Object) this, getUsedItemHand());
 		releaseUsingItem();
