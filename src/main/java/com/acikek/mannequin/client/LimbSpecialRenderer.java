@@ -4,26 +4,23 @@ import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
-import net.minecraft.client.renderer.special.PlayerHeadSpecialRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
@@ -74,8 +71,8 @@ public class LimbSpecialRenderer implements SpecialModelRenderer<LimbSpecialRend
 		var arg = Objects.requireNonNullElse(argument, defaultArgument);
 		if (itemDisplayContext == ItemDisplayContext.GROUND) {
 			poseStack.pushPose();
-			poseStack.translate(0.2F, -0.8F, -0.2F); // FIXME these values make no sense
-			poseStack.mulPose(new Quaternionf().rotateXYZ(65F * (float) (Math.PI / 180.0), -15F * (float) (Math.PI / 180.0), 0F));
+			//poseStack.translate(0.2F, -0.8F, -0.2F); // FIXME these values make no sense
+			//poseStack.mulPose(new Quaternionf().rotateXYZ(65F * (float) (Math.PI / 180.0), -15F * (float) (Math.PI / 180.0), 0F));
 		}
 		poseStack.pushPose();
 		poseStack.translate(0.5F, 1.5F, 0.5F);
@@ -95,12 +92,13 @@ public class LimbSpecialRenderer implements SpecialModelRenderer<LimbSpecialRend
 
 	public record Argument(RenderType renderType) { }
 
-	public record Unbaked(LimbType limbType, LimbOrientation limbOrientation) implements SpecialModelRenderer.Unbaked {
+	public record Unbaked(LimbType limbType, LimbOrientation limbOrientation, boolean slim) implements SpecialModelRenderer.Unbaked {
 
 		public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
 			instance.group(
 				LimbType.CODEC.fieldOf("limb_type").forGetter(Unbaked::limbType),
-				LimbOrientation.CODEC.fieldOf("limb_orientation").forGetter(Unbaked::limbOrientation)
+				LimbOrientation.CODEC.fieldOf("limb_orientation").forGetter(Unbaked::limbOrientation),
+				Codec.BOOL.fieldOf("limb_slim").forGetter(Unbaked::slim)
 			).apply(instance, Unbaked::new)
 		);
 
@@ -113,7 +111,9 @@ public class LimbSpecialRenderer implements SpecialModelRenderer<LimbSpecialRend
 		public @NotNull SpecialModelRenderer<?> bake(EntityModelSet entityModelSet) {
 			var layer = limbType == LimbType.LEG
 				? limbOrientation == LimbOrientation.LEFT ? MannequinClient.LEFT_LEG_LAYER : MannequinClient.RIGHT_LEG_LAYER
-				: limbOrientation == LimbOrientation.LEFT ? MannequinClient.LEFT_ARM_LAYER : MannequinClient.RIGHT_ARM_LAYER;
+				: limbOrientation == LimbOrientation.LEFT
+					? slim ? MannequinClient.LEFT_ARM_SLIM_LAYER : MannequinClient.LEFT_ARM_LAYER
+					: slim ? MannequinClient.RIGHT_ARM_SLIM_LAYER : MannequinClient.RIGHT_ARM_LAYER;
 			var model = new LimbModel(entityModelSet.bakeLayer(layer));
 			return new LimbSpecialRenderer(Minecraft.getInstance().getSkinManager(), model, new Argument(RenderType.entityTranslucent(DefaultPlayerSkin.getDefaultTexture())));
 		}
