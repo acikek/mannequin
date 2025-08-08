@@ -2,7 +2,10 @@ package com.acikek.mannequin.util;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.advancements.critereon.SingleComponentItemPredicate;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -39,5 +42,21 @@ public enum LimbOrientation implements StringRepresentable {
 	@Override
 	public @NotNull String getSerializedName() {
 		return name;
+	}
+
+	public record Predicate(LimbOrientation orientation) implements SingleComponentItemPredicate<LimbOrientation> {
+
+		public static final Codec<Predicate> CODEC = LimbOrientation.CODEC.xmap(Predicate::new, Predicate::orientation);
+		public static final Type<Predicate> TYPE = new Type<>(CODEC);
+
+		@Override
+		public @NotNull DataComponentType<LimbOrientation> componentType() {
+			return DATA_COMPONENT_TYPE;
+		}
+
+		@Override
+		public boolean matches(LimbOrientation object) {
+			return orientation == object;
+		}
 	}
 }

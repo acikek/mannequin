@@ -32,7 +32,6 @@ public class MannequinLimb {
 		if (type == LimbType.LEG) {
 			var stack = MannequinItems.LEG.getDefaultInstance();
 			stack.set(LimbOrientation.DATA_COMPONENT_TYPE, orientation);
-			stack.set(LegItem.SOURCE_COMPONENT_TYPE, player.getName());
 			stack.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
 			return stack;
 		}

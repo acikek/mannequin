@@ -7,15 +7,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.jetbrains.annotations.NotNull;
 
 public class LegItem extends Item {
-
-	public static final DataComponentType<Component> SOURCE_COMPONENT_TYPE = DataComponentType.<Component>builder()
-		.persistent(ComponentSerialization.CODEC)
-		.networkSynchronized(ComponentSerialization.STREAM_CODEC)
-		.cacheEncoding()
-		.build();
 
 	public static final Properties PROPERTIES = new Properties().component(LimbOrientation.DATA_COMPONENT_TYPE, LimbOrientation.NONE);
 
@@ -25,10 +21,19 @@ public class LegItem extends Item {
 
 	@Override
 	public @NotNull Component getName(ItemStack itemStack) {
+		var profile = itemStack.get(DataComponents.PROFILE);
 		var orientation = itemStack.getOrDefault(LimbOrientation.DATA_COMPONENT_TYPE, LimbOrientation.NONE);
-		if (itemStack.has(SOURCE_COMPONENT_TYPE)) {
-			return Component.translatable("item.mannequin.leg.named", itemStack.get(SOURCE_COMPONENT_TYPE), orientation.component);
+		if (profile != null && profile.name().isPresent()) {
+			return Component.translatable(descriptionId + ".named", profile.name().get(), orientation.component);
 		}
 		return Component.translatable("item.mannequin.leg", orientation.component);
+	}
+
+	@Override
+	public void verifyComponentsAfterLoad(ItemStack itemStack) {
+		var profile = itemStack.get(DataComponents.PROFILE);
+		if (profile != null && !profile.isResolved()) {
+			profile.resolve().thenAcceptAsync(resolved -> itemStack.set(DataComponents.PROFILE, resolved), SkullBlockEntity.CHECKED_MAIN_THREAD_EXECUTOR);
+		}
 	}
 }

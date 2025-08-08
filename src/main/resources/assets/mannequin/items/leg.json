@@ -1,9 +1,26 @@
 {
 	"model": {
-		"type": "minecraft:special",
-		"base": "mannequin:item/leg",
-		"model": {
-			"type": "mannequin:leg"
+		"type": "minecraft:condition",
+		"property": "minecraft:component",
+		"predicate": "mannequin:limb_orientation",
+		"value": "left",
+		"on_true": {
+			"type": "minecraft:special",
+			"base": "mannequin:item/limb",
+			"model": {
+				"type": "mannequin:limb",
+				"limb_type": "leg",
+				"limb_orientation": "left"
+			}
+		},
+		"on_false": {
+			"type": "minecraft:special",
+			"base": "mannequin:item/limb",
+			"model": {
+				"type": "mannequin:limb",
+				"limb_type": "leg",
+				"limb_orientation": "right"
+			}
 		}
 	}
 }

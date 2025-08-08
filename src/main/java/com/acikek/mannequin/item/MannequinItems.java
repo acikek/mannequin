@@ -3,6 +3,7 @@ package com.acikek.mannequin.item;
 import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.util.LimbOrientation;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.predicates.DataComponentPredicates;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -21,6 +22,6 @@ public class MannequinItems {
 		Registry.register(BuiltInRegistries.ITEM, ARM_KEY, ARM);
 		Registry.register(BuiltInRegistries.ITEM, LEG_KEY, LEG);
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb_orientation"), LimbOrientation.DATA_COMPONENT_TYPE);
-		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb_source"), LegItem.SOURCE_COMPONENT_TYPE);
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb_orientation"), LimbOrientation.Predicate.TYPE);
 	}
 }
