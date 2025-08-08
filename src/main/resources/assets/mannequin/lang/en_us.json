@@ -3,5 +3,7 @@
 	"limbOrientation.mannequin.left": "Left",
 	"limbOrientation.mannequin.right": "Right",
 	"item.mannequin.leg": "%s Leg",
-	"item.mannequin.leg.named": "%s's %s Leg"
+	"item.mannequin.leg.named": "%s's %s Leg",
+	"item.mannequin.arm": "%s Arm",
+	"item.mannequin.arm.named": "%s's %s Arm"
 }

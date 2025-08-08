@@ -1,6 +1,5 @@
 package com.acikek.mannequin.util;
 
-import com.acikek.mannequin.item.LegItem;
 import com.acikek.mannequin.item.MannequinItems;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.component.DataComponents;
@@ -29,15 +28,12 @@ public class MannequinLimb {
 	}
 
 	public ItemStack getItemStack(Player player) {
-		if (type == LimbType.LEG) {
-			var stack = MannequinItems.LEG.getDefaultInstance();
-			stack.set(LimbOrientation.DATA_COMPONENT_TYPE, orientation);
-			stack.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
-			return stack;
+		if (type == LimbType.TORSO) {
+			return ItemStack.EMPTY;
 		}
-		if (type == LimbType.ARM) {
-			return MannequinItems.ARM.getDefaultInstance();
-		}
-		return ItemStack.EMPTY;
+		var stack = (type == LimbType.LEG ? MannequinItems.LEG : MannequinItems.ARM).getDefaultInstance();
+		stack.set(LimbOrientation.DATA_COMPONENT_TYPE, orientation);
+		stack.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
+		return stack;
 	}
 }

@@ -12,7 +12,7 @@ public enum LimbType implements StringRepresentable {
 
 	public static final Codec<LimbType> CODEC = StringRepresentable.fromEnum(LimbType::values);
 
-	private final String name;
+	public final String name;
 
 	LimbType(String name) {
 		this.name = name;

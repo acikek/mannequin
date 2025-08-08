@@ -1,6 +1,7 @@
 package com.acikek.mannequin.mixin;
 
 import com.acikek.mannequin.util.MannequinEntity;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -32,12 +33,14 @@ public class ItemMixin {
 		}
 	}
 
+	// FIXME: this is bad
 	@Inject(method = "use", at = @At("HEAD"), cancellable = true)
 	private void mannequin$_c(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResult> cir) {
-		if (((Item) (Object) this) instanceof AxeItem && player instanceof MannequinEntity mannequinEntity) {
+		var stack = player.getItemInHand(interactionHand);
+		if ((stack.is(ItemTags.AXES) || stack.is(ItemTags.SWORDS)) && player instanceof MannequinEntity mannequinEntity) {
 			player.startUsingItem(interactionHand);
 			mannequinEntity.mannequin$setCanSever(true);
-			var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(player, player.getItemInHand(interactionHand), interactionHand);
+			var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(player, stack, interactionHand);
 			if (!limbToSever.severed) {
 				mannequinEntity.mannequin$setLimbToSever(limbToSever);
 			}
