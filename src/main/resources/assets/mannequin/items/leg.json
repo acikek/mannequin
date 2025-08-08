@@ -10,7 +10,8 @@
 			"model": {
 				"type": "mannequin:limb",
 				"limb_type": "leg",
-				"limb_orientation": "left"
+				"limb_orientation": "left",
+				"limb_slim": false
 			}
 		},
 		"on_false": {
@@ -19,7 +20,8 @@
 			"model": {
 				"type": "mannequin:limb",
 				"limb_type": "leg",
-				"limb_orientation": "right"
+				"limb_orientation": "right",
+				"limb_slim": false
 			}
 		}
 	}

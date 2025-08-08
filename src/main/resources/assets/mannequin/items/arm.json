@@ -5,21 +5,55 @@
 		"predicate": "mannequin:limb_orientation",
 		"value": "left",
 		"on_true": {
-			"type": "minecraft:special",
-			"base": "mannequin:item/limb",
-			"model": {
-				"type": "mannequin:limb",
-				"limb_type": "arm",
-				"limb_orientation": "left"
+			"type": "minecraft:condition",
+			"property": "minecraft:component",
+			"predicate": "mannequin:limb_slim",
+			"value": true,
+			"on_true": {
+				"type": "minecraft:special",
+				"base": "mannequin:item/limb",
+				"model": {
+					"type": "mannequin:limb",
+					"limb_type": "arm",
+					"limb_orientation": "left",
+					"limb_slim": true
+				}
+			},
+			"on_false": {
+				"type": "minecraft:special",
+				"base": "mannequin:item/limb",
+				"model": {
+					"type": "mannequin:limb",
+					"limb_type": "arm",
+					"limb_orientation": "left",
+					"limb_slim": false
+				}
 			}
 		},
 		"on_false": {
-			"type": "minecraft:special",
-			"base": "mannequin:item/limb",
-			"model": {
-				"type": "mannequin:limb",
-				"limb_type": "arm",
-				"limb_orientation": "right"
+			"type": "minecraft:condition",
+			"property": "minecraft:component",
+			"predicate": "mannequin:limb_slim",
+			"value": true,
+			"on_true": {
+				"type": "minecraft:special",
+				"base": "mannequin:item/limb",
+				"model": {
+					"type": "mannequin:limb",
+					"limb_type": "arm",
+					"limb_orientation": "right",
+					"limb_slim": true
+				}
+			},
+			"on_false": {
+				"type": "minecraft:special",
+				"base": "mannequin:item/limb",
+				"model": {
+					"type": "mannequin:limb",
+					"limb_type": "arm",
+					"limb_orientation": "right",
+					"limb_slim": false
+				}
 			}
 		}
 	}

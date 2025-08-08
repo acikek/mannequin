@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.PlayerSkin;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,11 +33,13 @@ public class MinecraftMixin {
 		}
 		if (options.keyAttack.isDown() && !mannequinEntity.mannequin$isSevering() && mannequinEntity.mannequin$getLimbToSever() != null) {
 			mannequinEntity.mannequin$startSevering(20);
-			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(true));
+			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
+			mannequinEntity.mannequin$setSlim(slim);
+			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(true, slim));
 		}
 		if (!options.keyAttack.isDown() && mannequinEntity.mannequin$isSevering()) {
 			player.releaseUsingItem();
-			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(false));
+			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(false, false));
 		}
 	}
 }

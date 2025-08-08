@@ -23,5 +23,7 @@ public class MannequinItems {
 		Registry.register(BuiltInRegistries.ITEM, ARM_KEY, ARM);
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb_orientation"), LimbOrientation.DATA_COMPONENT_TYPE);
 		Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb_orientation"), LimbOrientation.Predicate.TYPE);
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb_slim"), LimbItem.SLIM_COMPONENT_TYPE);
+		Registry.register(BuiltInRegistries.DATA_COMPONENT_PREDICATE_TYPE, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb_slim"), LimbItem.SlimPredicate.TYPE);
 	}
 }

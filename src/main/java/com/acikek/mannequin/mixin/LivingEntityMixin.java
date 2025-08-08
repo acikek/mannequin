@@ -51,6 +51,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Unique
 	private int severingTicksRemaining;
 
+	@Unique
+	private boolean slim;
+
 	@Inject(method = "updatingUsingItem", at = @At("HEAD"))
 	private void mannequin$tickSevering(CallbackInfo ci) {
 		if (!isUsingItem() || !severing) {
@@ -135,6 +138,16 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Override
 	public void mannequin$setSeveringTicksRemaining(int ticks) {
 		severingTicksRemaining = ticks;
+	}
+
+	@Override
+	public boolean mannequin$isSlim() {
+		return slim;
+	}
+
+	@Override
+	public void mannequin$setSlim(boolean slim) {
+		this.slim = slim;
 	}
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))

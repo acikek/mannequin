@@ -16,7 +16,7 @@ public class LimbModel extends Model {
 
 	public record Coordinates(int baseU, int baseV, int layerU, int layerV) {
 
-		public static Coordinates create(LimbType type, LimbOrientation orientation) {
+		public static Coordinates create(LimbType type, LimbOrientation orientation, boolean slim) {
 			if (type == LimbType.TORSO || orientation == LimbOrientation.NONE) {
 				return new Coordinates(0, 0, 0, 0);
 			}
@@ -28,7 +28,7 @@ public class LimbModel extends Model {
 				};
 				case ARM -> switch (orientation) {
 					case LEFT -> new Coordinates(32, 48, 48, 48);
-					case RIGHT -> new Coordinates(40, 16, 40, 32);
+					case RIGHT -> new Coordinates(40 + (slim ? 1 : 0), 16, 40, 32);
 					default -> throw new IllegalStateException();
 				};
 				default -> throw new IllegalStateException();
@@ -36,13 +36,13 @@ public class LimbModel extends Model {
 		}
 	}
 
-	public static LayerDefinition createLayer(LimbType type, LimbOrientation orientation) {
-		var coordinates = Coordinates.create(type, orientation);
+	public static LayerDefinition createLayer(LimbType type, LimbOrientation orientation, boolean slim) {
+		var coordinates = Coordinates.create(type, orientation, slim);
 		var mesh = new MeshDefinition();
 		var root = mesh.getRoot();
 		root.addOrReplaceChild("main", CubeListBuilder.create()
-			.texOffs(coordinates.baseU(), coordinates.baseV()).addBox(-10.0F, -14.0F, 6.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.0F))
-			.texOffs(coordinates.layerU(), coordinates.layerV()).addBox(-10.0F, -14.0F, 6.0F, 4.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
+			.texOffs(coordinates.baseU(), coordinates.baseV()).addBox(-10.0F, -14.0F, 6.0F, slim ? 3.0F : 4.0F, 12.0F, 4.0F, new CubeDeformation(0.0F))
+			.texOffs(coordinates.layerU(), coordinates.layerV()).addBox(-10.0F, -14.0F, 6.0F, slim ? 3.0F : 4.0F, 12.0F, 4.0F, new CubeDeformation(0.25F)),
 			PartPose.offset(8.0F, 24.0F, -8.0F));
 		return LayerDefinition.create(mesh, 64, 64);
 	}

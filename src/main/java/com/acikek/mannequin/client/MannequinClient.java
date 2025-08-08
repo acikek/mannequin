@@ -15,13 +15,17 @@ public class MannequinClient implements ClientModInitializer {
 	public static final ModelLayerLocation RIGHT_LEG_LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "right_leg"), "main");
 	public static final ModelLayerLocation LEFT_ARM_LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "left_arm"), "main");
 	public static final ModelLayerLocation RIGHT_ARM_LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "right_arm"), "main");
+	public static final ModelLayerLocation LEFT_ARM_SLIM_LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "left_arm_slim"), "main");
+	public static final ModelLayerLocation RIGHT_ARM_SLIM_LAYER = new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "right_arm_slim"), "main");
 
 	@Override
 	public void onInitializeClient() {
-		EntityModelLayerRegistry.registerModelLayer(LEFT_LEG_LAYER, () -> LimbModel.createLayer(LimbType.LEG, LimbOrientation.LEFT));
-		EntityModelLayerRegistry.registerModelLayer(RIGHT_LEG_LAYER, () -> LimbModel.createLayer(LimbType.LEG, LimbOrientation.RIGHT));
-		EntityModelLayerRegistry.registerModelLayer(LEFT_ARM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.LEFT));
-		EntityModelLayerRegistry.registerModelLayer(RIGHT_ARM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.RIGHT));
+		EntityModelLayerRegistry.registerModelLayer(LEFT_LEG_LAYER, () -> LimbModel.createLayer(LimbType.LEG, LimbOrientation.LEFT, false));
+		EntityModelLayerRegistry.registerModelLayer(RIGHT_LEG_LAYER, () -> LimbModel.createLayer(LimbType.LEG, LimbOrientation.RIGHT, false));
+		EntityModelLayerRegistry.registerModelLayer(LEFT_ARM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.LEFT, false));
+		EntityModelLayerRegistry.registerModelLayer(RIGHT_ARM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.RIGHT, false));
+		EntityModelLayerRegistry.registerModelLayer(LEFT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.LEFT, true));
+		EntityModelLayerRegistry.registerModelLayer(RIGHT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.RIGHT, true));
 		SpecialModelRenderers.ID_MAPPER.put(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb"), LimbSpecialRenderer.Unbaked.MAP_CODEC);
 	}
 }

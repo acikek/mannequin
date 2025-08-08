@@ -13,11 +13,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class MannequinNetworking {
 
-	public record UpdateSevering(boolean active) implements CustomPacketPayload {
+	public record UpdateSevering(boolean active, boolean slim) implements CustomPacketPayload {
 
 		public static final Type<UpdateSevering> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_severing"));
 
-		public static final StreamCodec<FriendlyByteBuf, UpdateSevering> STREAM_CODEC = ByteBufCodecs.BOOL.map(UpdateSevering::new, UpdateSevering::active).cast();
+		public static final StreamCodec<FriendlyByteBuf, UpdateSevering> STREAM_CODEC = StreamCodec.composite(ByteBufCodecs.BOOL, UpdateSevering::active, ByteBufCodecs.BOOL, UpdateSevering::slim, UpdateSevering::new);
 
 		@Override
 		public @NotNull Type<? extends CustomPacketPayload> type() {
@@ -32,6 +32,7 @@ public class MannequinNetworking {
 				if (payload.active()) {
 					if (!mannequinEntity.mannequin$isSevering() && mannequinEntity.mannequin$getLimbToSever() != null) {
 						mannequinEntity.mannequin$startSevering(20);
+						mannequinEntity.mannequin$setSlim(payload.slim());
 					}
 				}
 				else {
