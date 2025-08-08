@@ -1,6 +1,9 @@
 {
 	"model": {
-		"type": "minecraft:model",
-		"model": "mannequin:item/leg"
+		"type": "minecraft:special",
+		"base": "mannequin:item/leg",
+		"model": {
+			"type": "mannequin:leg"
+		}
 	}
 }

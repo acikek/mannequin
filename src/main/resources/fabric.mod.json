@@ -16,7 +16,10 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-          "com.acikek.mannequin.Mannequin"
+          	"com.acikek.mannequin.Mannequin"
+		],
+		"client": [
+			"com.acikek.mannequin.client.MannequinClient"
 		]
 	},
 	"mixins": [
