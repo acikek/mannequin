@@ -28,4 +28,19 @@ public class MannequinClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(RIGHT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.RIGHT, true));
 		SpecialModelRenderers.ID_MAPPER.put(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb"), LimbSpecialRenderer.Unbaked.MAP_CODEC);
 	}
+
+	/*public static TextureSheetParticle createBloodHang(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
+		DripParticle.DripHangParticle dripHangParticle = new DripParticle.DripHangParticle(clientLevel, d, e, f, Fluids.EMPTY, ParticleTypes.FALLING_OBSIDIAN_TEAR);
+		dripHangParticle.gravity *= 0.01F;
+		dripHangParticle.lifetime = 100;
+		dripHangParticle.setColor(0.51171875F, 0.03125F, 0.890625F);
+		return dripHangParticle;
+	}
+
+	static class DripLandParticle extends DripParticle {
+		DripLandParticle(ClientLevel clientLevel, double d, double e, double f, Fluid fluid) {
+			super(clientLevel, d, e, f, fluid);
+			this.lifetime = (int)(16.0 / (Math.random() * 0.8 + 0.2));
+		}
+	}*/
 }

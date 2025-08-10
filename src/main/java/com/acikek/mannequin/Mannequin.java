@@ -4,6 +4,7 @@ import com.acikek.mannequin.item.MannequinItems;
 import com.acikek.mannequin.network.MannequinNetworking;
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EntityDimensions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,5 +22,6 @@ public class Mannequin implements ModInitializer {
 		LOGGER.info("Initializing Mannequin...");
 		MannequinItems.register();
 		MannequinNetworking.register();
+		DataComponents.TOOL
 	}
 }

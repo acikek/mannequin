@@ -26,18 +26,19 @@ public class MinecraftMixin {
 	@Nullable
 	public LocalPlayer player;
 
-	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 11))
+	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 14))
 	private void mannequin$inputSever(CallbackInfo ci) {
 		if (!(player instanceof MannequinEntity mannequinEntity)) {
 			return;
 		}
-		if (options.keyAttack.isDown() && !mannequinEntity.mannequin$isSevering() && mannequinEntity.mannequin$getLimbToSever() != null) {
+		if (options.keyAttack.isDown() && options.keyUse.isDown() && !mannequinEntity.mannequin$isSevering() && mannequinEntity.mannequin$getLimbToSever() != null) {
+
 			mannequinEntity.mannequin$startSevering(20);
 			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
 			mannequinEntity.mannequin$setSlim(slim);
 			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(true, slim));
 		}
-		if (!options.keyAttack.isDown() && mannequinEntity.mannequin$isSevering()) {
+		if ((!options.keyAttack.isDown() || !options.keyUse.isDown()) && mannequinEntity.mannequin$isSevering()) {
 			player.releaseUsingItem();
 			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(false, false));
 		}

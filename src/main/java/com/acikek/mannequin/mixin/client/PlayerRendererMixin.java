@@ -1,11 +1,15 @@
 package com.acikek.mannequin.mixin.client;
 
+import com.acikek.mannequin.client.PlayerBloodLayer;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinRenderState;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Share;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.world.phys.Vec3;
@@ -17,6 +21,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerRenderer.class)
 public class PlayerRendererMixin {
+
+	@Inject(method = "<init>", at = @At("TAIL"))
+	private void mannequin$addBloodRenderer(EntityRendererProvider.Context context, boolean bl, CallbackInfo ci) {
+		((LivingEntityRendererAccessor<AbstractClientPlayer, PlayerRenderState, PlayerModel>) this).callAddLayer(new PlayerBloodLayer((PlayerRenderer) (Object) this));
+	}
 
 	@Inject(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V", at = @At("TAIL"))
 	private void mannequin$extractMannequinRenderState(AbstractClientPlayer abstractClientPlayer, PlayerRenderState playerRenderState, float f, CallbackInfo ci) {
