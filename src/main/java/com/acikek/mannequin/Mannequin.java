@@ -17,7 +17,7 @@ public class Mannequin implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static final EntityDimensions LEGLESS_DIMENSIONS = EntityDimensions.scalable(0.6F, 1.1F);
-	public static final AttributeModifier SEVERING_SLOWNESS = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MOD_ID, "severing_slowness"), -0.20, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+	public static final AttributeModifier SEVERING_SLOWNESS = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MOD_ID, "severing_slowness"), -0.65, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
 	@Override
 	public void onInitialize() {

@@ -1,10 +1,19 @@
 package com.acikek.mannequin.mixin.client;
 
 import com.acikek.mannequin.util.MannequinEntity;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -12,5 +21,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemInHandRenderer.class)
 public class ItemInHandRendererMixin {
 
+	@Unique
+	private Player player;
 
+	@Unique
+	private float deltaTime;
+
+	@Inject(method = "renderArmWithItem", at = @At("HEAD"))
+	private void mannequin$capturePlayer(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
+		player = abstractClientPlayer;
+		deltaTime = f;
+	}
+
+	@Inject(method = "applyItemArmTransform", at = @At("TAIL"))
+	private void mannequin$applySeveringAnimation(PoseStack poseStack, HumanoidArm humanoidArm, float f, CallbackInfo ci) {
+		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$isSevering()) {
+			return;
+		}
+		var arm = mannequinEntity.mannequin$getSeveringHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
+		if (arm != humanoidArm) {
+			return;
+		}
+		int right = humanoidArm == HumanoidArm.RIGHT ? 1 : -1;
+		poseStack.translate(right * -0.25F, 0.12F, 0.2F);
+		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
+		poseStack.mulPose(Axis.YP.rotationDegrees(right * 13.365F));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(right * 78.05F));
+		float h = mannequinEntity.mannequin$getSeveringTicksRemaining() % 10;
+		float i = h - deltaTime + 1.0F;
+		float j = 1.0F - i / 10.0F;
+		float motion = 0.1F * Mth.cos(j * 2.0F * (float) Math.PI);
+		poseStack.translate(0.0F, motion, 0.0F);
+	}
 }

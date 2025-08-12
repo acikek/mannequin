@@ -91,12 +91,12 @@ public class MinecraftMixin {
 	}
 
 	@Unique
-	private boolean mannequin$querySevering(LocalPlayer player) {
+	private void mannequin$querySevering(LocalPlayer player) {
 		if (!(player instanceof MannequinEntity mannequinEntity)) {
-			return false;
+			return;
 		}
 		if (gameMode == null || gameMode.isDestroying() || player.isHandsBusy() || player.isUsingItem()) {
-			return false;
+			return;
 		}
 		for (var hand : InteractionHand.values()) {
 			var stack = player.getItemInHand(hand);
@@ -107,9 +107,8 @@ public class MinecraftMixin {
 			if (limbCandidate != null && !limbCandidate.severed) {
 				limbToSever = limbCandidate;
 				severingHand = hand;
-				return true;
+				return;
 			}
 		}
-		return false;
 	}
 }
