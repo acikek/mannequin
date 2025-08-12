@@ -21,6 +21,6 @@ public class PlayerBloodLayer extends RenderLayer<PlayerRenderState, PlayerModel
 		if (entityRenderState.isInvisible || !(entityRenderState instanceof MannequinRenderState mannequinRenderState)) {
 			return;
 		}
-		Minecraft.getInstance().levelRenderer.addParticle(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, entityRenderState.x, entityRenderState.y, entityRenderState.z, 0.0, 0.0, 0.0);
+		//Minecraft.getInstance().levelRenderer.addParticle(ParticleTypes.DRIPPING_OBSIDIAN_TEAR, entityRenderState.x, entityRenderState.y, entityRenderState.z, 0.0, 0.0, 0.0);
 	}
 }

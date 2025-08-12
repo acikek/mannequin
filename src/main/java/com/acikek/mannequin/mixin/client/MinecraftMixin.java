@@ -2,9 +2,7 @@ package com.acikek.mannequin.mixin.client;
 
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.MannequinEntity;
-import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.Share;
-import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import com.acikek.mannequin.util.MannequinLimb;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -21,6 +19,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
@@ -41,29 +40,58 @@ public class MinecraftMixin {
 	@Nullable
 	public ClientLevel level;
 
+	@Unique
+	private @Nullable MannequinLimb limbToSever;
+
+	@Unique
+	private @Nullable InteractionHand severingHand;
+
 	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 14))
-	private void mannequin$inputSever(CallbackInfo ci, @Share("canSever") LocalBooleanRef canSever) {
+	private void mannequin$inputSever(CallbackInfo ci) {
 		if (!(player instanceof MannequinEntity mannequinEntity)) {
 			return;
 		}
 		if (options.keyAttack.isDown() && options.keyUse.isDown() && !mannequinEntity.mannequin$isSevering()) {
-			canSever.set(true);
+			mannequin$querySevering(player);
 		}
 		if ((!options.keyAttack.isDown() || !options.keyUse.isDown()) && mannequinEntity.mannequin$isSevering()) {
 			mannequinEntity.mannequin$stopSevering();
-			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(false, false));
+			ClientPlayNetworking.send(MannequinNetworking.UpdateSevering.cancelled());
+		}
+	}
+
+	@Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
+	private void mannequin$cancelStartAttack(CallbackInfoReturnable<Boolean> cir) {
+		if (player instanceof MannequinEntity mannequinEntity && (mannequinEntity.mannequin$isSevering() || limbToSever != null || severingHand != null)) {
+			cir.setReturnValue(false);
 		}
 	}
 
 	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 16))
-	private void mannequin$tryStartSevering(CallbackInfo ci, @Local(name = "bl3") boolean isAttacking, @Share("canSever") LocalBooleanRef canSever) {
-		if (canSever.get()) {
-			mannequin$tryStartSevering(player);
+	private void mannequin$tryStartSevering(CallbackInfo ci) {
+		if (player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
+			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
+			mannequinEntity.mannequin$startSevering(limbToSever, severingHand, 20);
+			mannequinEntity.mannequin$setSlim(slim);
+			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(true, severingHand == InteractionHand.MAIN_HAND, slim));
 		}
 	}
 
+	@Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
+	private void mannequin$cancelContinueAttack(boolean bl, CallbackInfo ci) {
+		if (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$isSevering()) {
+			ci.cancel();
+		}
+	}
+
+	@Inject(method = "handleKeybinds", at = @At("TAIL"))
+	private void mannequin$clearQueryData(CallbackInfo ci) {
+		limbToSever = null;
+		severingHand = null;
+	}
+
 	@Unique
-	private boolean mannequin$tryStartSevering(LocalPlayer player) {
+	private boolean mannequin$querySevering(LocalPlayer player) {
 		if (!(player instanceof MannequinEntity mannequinEntity)) {
 			return false;
 		}
@@ -75,12 +103,10 @@ public class MinecraftMixin {
 			if (level == null || !stack.isItemEnabled(level.enabledFeatures())) {
 				continue;
 			}
-			var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(player, stack, hand);
-			if (limbToSever != null) {
-				boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-				mannequinEntity.mannequin$startSevering(limbToSever, 20);
-				mannequinEntity.mannequin$setSlim(slim);
-				ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(true, slim));
+			var limbCandidate = mannequinEntity.mannequin$getLimbs().resolve(player, stack, hand);
+			if (limbCandidate != null && !limbCandidate.severed) {
+				limbToSever = limbCandidate;
+				severingHand = hand;
 				return true;
 			}
 		}

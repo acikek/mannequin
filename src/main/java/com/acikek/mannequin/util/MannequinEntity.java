@@ -1,22 +1,23 @@
 package com.acikek.mannequin.util;
 
+import net.minecraft.world.InteractionHand;
 import org.jetbrains.annotations.Nullable;
 
 public interface MannequinEntity {
 
 	MannequinLimbs mannequin$getLimbs();
 
-	boolean mannequin$canSever();
-
-	void mannequin$setCanSever(boolean canSever);
-
-	@Nullable MannequinLimb mannequin$getLimbToSever();
-
-	void mannequin$setLimbToSever(MannequinLimb limb);
-
 	boolean mannequin$isSevering();
 
 	void mannequin$setSevering(boolean severing);
+
+	@Nullable MannequinLimb mannequin$getSeveringLimb();
+
+	void mannequin$setSeveringLimb(MannequinLimb limb);
+
+	@Nullable InteractionHand mannequin$getSeveringHand();
+
+	void mannequin$setSeveringHand(InteractionHand hand);
 
 	int mannequin$getSeveringTicksRemaining();
 
@@ -26,16 +27,7 @@ public interface MannequinEntity {
 
 	void mannequin$setSlim(boolean slim);
 
-	default void mannequin$startSevering(MannequinLimb limbToSever, int ticks) {
-		mannequin$setSevering(true);
-		mannequin$setLimbToSever(limbToSever);
-		mannequin$setSeveringTicksRemaining(ticks);
-	}
+	void mannequin$startSevering(MannequinLimb limbToSever, InteractionHand hand, int ticks);
 
-	default void mannequin$stopSevering() {
-		mannequin$setCanSever(false);
-		mannequin$setLimbToSever(null);
-		mannequin$setSevering(false);
-		mannequin$setSeveringTicksRemaining(0);
-	}
+	void mannequin$stopSevering();
 }

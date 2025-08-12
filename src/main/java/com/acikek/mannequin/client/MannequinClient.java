@@ -1,6 +1,7 @@
 package com.acikek.mannequin.client;
 
 import com.acikek.mannequin.Mannequin;
+import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
 import net.fabricmc.api.ClientModInitializer;
@@ -27,6 +28,7 @@ public class MannequinClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(LEFT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.LEFT, true));
 		EntityModelLayerRegistry.registerModelLayer(RIGHT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.RIGHT, true));
 		SpecialModelRenderers.ID_MAPPER.put(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb"), LimbSpecialRenderer.Unbaked.MAP_CODEC);
+		MannequinNetworking.registerClient();
 	}
 
 	/*public static TextureSheetParticle createBloodHang(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {

@@ -12,10 +12,5 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ItemInHandRenderer.class)
 public class ItemInHandRendererMixin {
 
-	@Inject(method = "itemUsed", at = @At("HEAD"), cancellable = true)
-	private void mannequin$cancelItemUsedAnimation(InteractionHand interactionHand, CallbackInfo ci) {
-		if (Minecraft.getInstance().player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$canSever()) {
-			ci.cancel();
-		}
-	}
+
 }

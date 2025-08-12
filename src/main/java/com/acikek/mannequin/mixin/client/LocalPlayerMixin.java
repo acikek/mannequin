@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(LocalPlayer.class)
 public class LocalPlayerMixin {
 
-	@ModifyExpressionValue(method = "modifyInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
+	/*@ModifyExpressionValue(method = "modifyInput", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isUsingItem()Z"))
 	private boolean mannequin$cancelUsingSlowness(boolean original) {
 		return mannequin$isUsingItem(original);
 	}
@@ -26,5 +26,5 @@ public class LocalPlayerMixin {
 			return original;
 		}
 		return mannequinEntity.mannequin$isSevering() || (original && !mannequinEntity.mannequin$canSever());
-	}
+	}*/
 }
