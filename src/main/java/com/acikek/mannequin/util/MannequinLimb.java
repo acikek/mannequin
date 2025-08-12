@@ -2,8 +2,10 @@ package com.acikek.mannequin.util;
 
 import com.acikek.mannequin.item.LimbItem;
 import com.acikek.mannequin.item.MannequinItems;
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
@@ -39,5 +41,11 @@ public class MannequinLimb {
 			stack.set(LimbItem.SLIM_COMPONENT_TYPE, mannequinEntity.mannequin$isSlim());
 		}
 		return stack;
+	}
+
+	public int getSeveringTicks(Player player) {
+		int damageOffset = type == LimbType.LEG ? 6 : 3;
+		int maxTime = type == LimbType.LEG ? 230 : 120;
+		return (int) (maxTime / (player.getAttributeValue(Attributes.ATTACK_DAMAGE) - damageOffset));
 	}
 }

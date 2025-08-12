@@ -17,12 +17,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class MannequinNetworking {
 
-	public record UpdateSevering(boolean active, boolean mainHand, boolean slim) implements CustomPacketPayload {
+	public record UpdateSevering(int ticks, boolean mainHand, boolean slim) implements CustomPacketPayload {
 
 		public static final Type<UpdateSevering> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_severing"));
 
 		public static final StreamCodec<FriendlyByteBuf, UpdateSevering> STREAM_CODEC = StreamCodec.composite(
-			ByteBufCodecs.BOOL, UpdateSevering::active,
+			ByteBufCodecs.INT, UpdateSevering::ticks,
 			ByteBufCodecs.BOOL, UpdateSevering::mainHand,
 			ByteBufCodecs.BOOL, UpdateSevering::slim,
 			UpdateSevering::new
@@ -34,7 +34,7 @@ public class MannequinNetworking {
 		}
 
 		public static UpdateSevering cancelled() {
-			return new UpdateSevering(false, false, false);
+			return new UpdateSevering(0, false, false);
 		}
 	}
 
@@ -55,14 +55,20 @@ public class MannequinNetworking {
 	@Environment(EnvType.CLIENT)
 	public static void registerClient() {
 		ClientPlayNetworking.registerGlobalReceiver(UpdateSevering.TYPE, (payload, context) -> {
-			if (!payload.active() && context.player() instanceof MannequinEntity mannequinEntity) {
+			if (!(context.player() instanceof MannequinEntity mannequinEntity)) {
+				return;
+			}
+			if (payload.ticks() <= 0) {
 				mannequinEntity.mannequin$stopSevering();
+			}
+			else {
+				mannequinEntity.mannequin$setSeveringTicksRemaining(payload.ticks());
 			}
 		});
 	}
 
 	public static boolean c2sTryStartSevering(UpdateSevering payload, ServerPlayNetworking.Context context, MannequinEntity mannequinEntity) {
-		if (!payload.active()) {
+		if (payload.ticks() <= 0) {
 			return false;
 		}
 		if (mannequinEntity.mannequin$isSevering()) {
@@ -71,8 +77,10 @@ public class MannequinNetworking {
 		var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 		var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(context.player(), context.player().getItemInHand(hand), hand);
 		if (limbToSever != null && !limbToSever.severed) {
-			mannequinEntity.mannequin$startSevering(limbToSever, hand, 20);
+			int severingTicks = limbToSever.getSeveringTicks(context.player());
+			mannequinEntity.mannequin$startSevering(limbToSever, hand, severingTicks);
 			mannequinEntity.mannequin$setSlim(payload.slim());
+			context.responseSender().sendPacket(new UpdateSevering(severingTicks, false, false));
 			return true;
 		}
 		return false;

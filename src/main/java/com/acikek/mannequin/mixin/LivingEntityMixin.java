@@ -155,9 +155,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		severing = true;
 		severingLimb = limbToSever;
 		severingHand = hand;
-		severingTicksRemaining = 10000000;
+		severingTicksRemaining = ticks;
 		var attribute = getAttribute(Attributes.MOVEMENT_SPEED);
-		if (attribute != null) {
+		if (attribute != null && !attribute.hasModifier(Mannequin.SEVERING_SLOWNESS.id())) {
 			attribute.addTransientModifier(Mannequin.SEVERING_SLOWNESS);
 		}
 	}

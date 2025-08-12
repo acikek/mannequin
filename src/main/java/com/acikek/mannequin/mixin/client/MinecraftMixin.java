@@ -1,5 +1,6 @@
 package com.acikek.mannequin.mixin.client;
 
+import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinLimb;
@@ -11,6 +12,7 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -71,9 +73,10 @@ public class MinecraftMixin {
 	private void mannequin$tryStartSevering(CallbackInfo ci) {
 		if (player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
 			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-			mannequinEntity.mannequin$startSevering(limbToSever, severingHand, 20);
+			System.out.println(player.getAttributeValue(Attributes.ATTACK_DAMAGE));
+			mannequinEntity.mannequin$startSevering(limbToSever, severingHand, Integer.MAX_VALUE);
 			mannequinEntity.mannequin$setSlim(slim);
-			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(true, severingHand == InteractionHand.MAIN_HAND, slim));
+			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(1, severingHand == InteractionHand.MAIN_HAND, slim));
 		}
 	}
 
