@@ -22,6 +22,5 @@ public class Mannequin implements ModInitializer {
 		LOGGER.info("Initializing Mannequin...");
 		MannequinItems.register();
 		MannequinNetworking.register();
-		DataComponents.TOOL
 	}
 }

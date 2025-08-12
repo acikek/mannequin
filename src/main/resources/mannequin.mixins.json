@@ -3,7 +3,6 @@
   "package": "com.acikek.mannequin.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ItemMixin",
     "LivingEntityMixin"
   ],
   "injectors": {

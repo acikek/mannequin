@@ -78,7 +78,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			}
 		}
 		getUseItem().hurtAndBreak(5, (LivingEntity) (Object) this, getUsedItemHand());
-		releaseUsingItem();
+		mannequin$stopSevering();
 		((LivingEntity) (Object) this).refreshDimensions();
 	}
 

@@ -26,8 +26,9 @@ public interface MannequinEntity {
 
 	void mannequin$setSlim(boolean slim);
 
-	default void mannequin$startSevering(int ticks) {
+	default void mannequin$startSevering(MannequinLimb limbToSever, int ticks) {
 		mannequin$setSevering(true);
+		mannequin$setLimbToSever(limbToSever);
 		mannequin$setSeveringTicksRemaining(ticks);
 	}
 

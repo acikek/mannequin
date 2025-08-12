@@ -28,17 +28,24 @@ public class MannequinNetworking {
 	public static void register() {
 		PayloadTypeRegistry.playC2S().register(UpdateSevering.TYPE, UpdateSevering.STREAM_CODEC);
 		ServerPlayNetworking.registerGlobalReceiver(UpdateSevering.TYPE, (payload, context) -> {
-			if (context.player().isUsingItem() && context.player() instanceof MannequinEntity mannequinEntity) {
-				if (payload.active()) {
-					if (!mannequinEntity.mannequin$isSevering() && mannequinEntity.mannequin$getLimbToSever() != null) {
-						mannequinEntity.mannequin$startSevering(20);
-						mannequinEntity.mannequin$setSlim(payload.slim());
-					}
-				}
-				else {
-					context.player().releaseUsingItem();
-				}
+			if (!(context.player() instanceof MannequinEntity mannequinEntity)) {
+				return;
 			}
+
 		});
+	}
+
+	public static boolean c2sTryStartSevering(UpdateSevering payload, ServerPlayNetworking.Context context, MannequinEntity mannequinEntity) {
+		if (!payload.active()) {
+			return false;
+		}
+		if (mannequinEntity.mannequin$isSevering()) {
+			return true;
+		}
+		if (mannequinEntity.mannequin$getLimbs().resolve(context.player(), ))
+		if (!mannequinEntity.mannequin$isSevering() && mannequinEntity.mannequin$getLimbToSever() != null) {
+			mannequinEntity.mannequin$startSevering(20);
+			mannequinEntity.mannequin$setSlim(payload.slim());
+		}
 	}
 }

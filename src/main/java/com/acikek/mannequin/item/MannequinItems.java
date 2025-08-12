@@ -8,6 +8,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
 public class MannequinItems {
@@ -17,6 +18,9 @@ public class MannequinItems {
 
 	public static final ResourceKey<Item> ARM_KEY = ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "arm"));
 	public static final LimbItem ARM = new LimbItem(new Item.Properties().setId(ARM_KEY), LimbType.ARM);
+
+	public static final TagKey<Item> SEVERS_LEGS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "severs_legs"));
+	public static final TagKey<Item> SEVERS_ARMS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "severs_arms"));
 
 	public static void register() {
 		Registry.register(BuiltInRegistries.ITEM, LEG_KEY, LEG);
