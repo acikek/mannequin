@@ -21,6 +21,9 @@ public class MannequinItems {
 
 	public static final TagKey<Item> SEVERS_LEGS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "severs_legs"));
 	public static final TagKey<Item> SEVERS_ARMS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "severs_arms"));
+	public static final TagKey<Item> SEVER_TIER_1 = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "sever_tier_1"));
+	public static final TagKey<Item> SEVER_TIER_2 = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "sever_tier_2"));
+	public static final TagKey<Item> SEVER_TIER_3 = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "sever_tier_3"));
 
 	public static void register() {
 		Registry.register(BuiltInRegistries.ITEM, LEG_KEY, LEG);

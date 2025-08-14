@@ -132,15 +132,15 @@ public class MannequinNetworking {
 		if (mannequinEntity.mannequin$isSevering()) {
 			return -1;
 		}
-		System.out.println("a");
 		var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-		var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(player, player.getItemInHand(hand), hand);
+		var stack = player.getItemInHand(hand);
+		var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(player, stack, hand);
 		if (limbToSever != null && !limbToSever.severed) {
-			System.out.println("b");
-			int severingTicks = limbToSever.getSeveringTicks(player);
-			System.out.println(severingTicks);
-			mannequinEntity.mannequin$startSevering(limbToSever, hand, severingTicks);
-			mannequinEntity.mannequin$setSlim(payload.slim());
+			int severingTicks = limbToSever.getSeveringTicks(stack);
+			if (severingTicks >= 0) {
+				mannequinEntity.mannequin$startSevering(limbToSever, hand, severingTicks);
+				mannequinEntity.mannequin$setSlim(payload.slim());
+			}
 			return severingTicks;
 		}
 		return -1;
