@@ -1,5 +1,6 @@
-package com.acikek.mannequin.client;
+package com.acikek.mannequin.client.render;
 
+import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
 import com.mojang.blaze3d.vertex.PoseStack;

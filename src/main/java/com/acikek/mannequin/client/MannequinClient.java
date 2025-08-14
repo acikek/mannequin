@@ -1,14 +1,18 @@
 package com.acikek.mannequin.client;
 
 import com.acikek.mannequin.Mannequin;
+import com.acikek.mannequin.client.render.LimbModel;
+import com.acikek.mannequin.client.render.LimbSpecialRenderer;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 
 public class MannequinClient implements ClientModInitializer {
 
@@ -29,6 +33,10 @@ public class MannequinClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(RIGHT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.RIGHT, true));
 		SpecialModelRenderers.ID_MAPPER.put(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb"), LimbSpecialRenderer.Unbaked.MAP_CODEC);
 		MannequinNetworking.registerClient();
+	}
+
+	public static void playSeveringSound(Player player) {
+		Minecraft.getInstance().getSoundManager().play(new SeveringSoundInstance(player));
 	}
 
 	/*public static TextureSheetParticle createBloodHang(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {

@@ -1,6 +1,7 @@
 package com.acikek.mannequin.mixin.client;
 
 import com.acikek.mannequin.Mannequin;
+import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinLimb;
@@ -77,6 +78,7 @@ public class MinecraftMixin {
 			mannequinEntity.mannequin$startSevering(limbToSever, severingHand, Integer.MAX_VALUE);
 			mannequinEntity.mannequin$setSlim(slim);
 			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(1, severingHand == InteractionHand.MAIN_HAND, slim));
+			MannequinClient.playSeveringSound(player);
 		}
 	}
 

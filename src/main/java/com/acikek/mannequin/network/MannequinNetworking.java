@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class MannequinNetworking {
 
+	// TODO: split up
 	public record UpdateSevering(int ticks, boolean mainHand, boolean slim) implements CustomPacketPayload {
 
 		public static final Type<UpdateSevering> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_severing"));
@@ -67,6 +68,7 @@ public class MannequinNetworking {
 		});
 	}
 
+	// FIXME
 	public static boolean c2sTryStartSevering(UpdateSevering payload, ServerPlayNetworking.Context context, MannequinEntity mannequinEntity) {
 		if (payload.ticks() <= 0) {
 			return false;
@@ -81,6 +83,7 @@ public class MannequinNetworking {
 			mannequinEntity.mannequin$startSevering(limbToSever, hand, severingTicks);
 			mannequinEntity.mannequin$setSlim(payload.slim());
 			context.responseSender().sendPacket(new UpdateSevering(severingTicks, false, false));
+			// TODO: send to watching players
 			return true;
 		}
 		return false;

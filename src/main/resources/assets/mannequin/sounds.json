@@ -1,0 +1,16 @@
+{
+	"entity.severing": {
+		"subtitle": "subtitles.mannequin.severing",
+		"sounds": [
+			"mannequin:severing"
+		]
+	},
+	"entity.limb_snap": {
+		"subtitle": "subtitles.mannequin.limb_snap",
+		"sounds": [
+			"mannequin:snap_1",
+			"mannequin:snap_2",
+			"mannequin:snap_3"
+		]
+	}
+}

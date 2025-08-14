@@ -1,11 +1,13 @@
 package com.acikek.mannequin.mixin;
 
 import com.acikek.mannequin.Mannequin;
+import com.acikek.mannequin.sound.MannequinSounds;
 import com.acikek.mannequin.util.MannequinLimb;
 import com.acikek.mannequin.util.MannequinLimbs;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,6 +35,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Shadow
 	@Nullable
 	public abstract AttributeInstance getAttribute(Holder<Attribute> holder);
+
+	@Shadow
+	public abstract void makeSound(@Nullable SoundEvent soundEvent);
 
 	@Unique
 	private final MannequinLimbs limbs = new MannequinLimbs();
@@ -80,6 +85,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		}
 		mannequin$stopSevering();
 		((LivingEntity) (Object) this).refreshDimensions();
+		makeSound(MannequinSounds.LIMB_SNAP);
 	}
 
 	@Inject(method = "stopUsingItem", at = @At("HEAD"))

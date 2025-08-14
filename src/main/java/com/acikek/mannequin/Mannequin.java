@@ -2,6 +2,7 @@ package com.acikek.mannequin;
 
 import com.acikek.mannequin.item.MannequinItems;
 import com.acikek.mannequin.network.MannequinNetworking;
+import com.acikek.mannequin.sound.MannequinSounds;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +24,7 @@ public class Mannequin implements ModInitializer {
 	public void onInitialize() {
 		LOGGER.info("Initializing Mannequin...");
 		MannequinItems.register();
+		MannequinSounds.register();
 		MannequinNetworking.register();
 	}
 }

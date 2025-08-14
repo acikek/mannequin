@@ -5,5 +5,7 @@
 	"item.mannequin.leg": "%s Leg",
 	"item.mannequin.leg.named": "%s's %s Leg",
 	"item.mannequin.arm": "%s Arm",
-	"item.mannequin.arm.named": "%s's %s Arm"
+	"item.mannequin.arm.named": "%s's %s Arm",
+	"subtitle.mannequin.severing": "Limb severing",
+	"subtitle.mannequin.limb_snap": "Limb snaps"
 }

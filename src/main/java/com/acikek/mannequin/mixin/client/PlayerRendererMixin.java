@@ -1,6 +1,6 @@
 package com.acikek.mannequin.mixin.client;
 
-import com.acikek.mannequin.client.PlayerBloodLayer;
+import com.acikek.mannequin.client.render.PlayerBloodLayer;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinRenderState;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
@@ -9,7 +9,6 @@ import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.world.phys.Vec3;

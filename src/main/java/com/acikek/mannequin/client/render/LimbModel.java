@@ -1,4 +1,4 @@
-package com.acikek.mannequin.client;
+package com.acikek.mannequin.client.render;
 
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
