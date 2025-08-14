@@ -1,6 +1,5 @@
 package com.acikek.mannequin.mixin.client;
 
-import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.MannequinEntity;
@@ -23,6 +22,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.OptionalInt;
 
 @Mixin(Minecraft.class)
 public class MinecraftMixin {
@@ -59,7 +60,7 @@ public class MinecraftMixin {
 		}
 		if ((!options.keyAttack.isDown() || !options.keyUse.isDown()) && mannequinEntity.mannequin$isSevering()) {
 			mannequinEntity.mannequin$stopSevering();
-			ClientPlayNetworking.send(MannequinNetworking.UpdateSevering.cancelled());
+			ClientPlayNetworking.send(new MannequinNetworking.StopSevering(OptionalInt.empty()));
 		}
 	}
 
@@ -74,10 +75,9 @@ public class MinecraftMixin {
 	private void mannequin$tryStartSevering(CallbackInfo ci) {
 		if (player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
 			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-			System.out.println(player.getAttributeValue(Attributes.ATTACK_DAMAGE));
 			mannequinEntity.mannequin$startSevering(limbToSever, severingHand, Integer.MAX_VALUE);
 			mannequinEntity.mannequin$setSlim(slim);
-			ClientPlayNetworking.send(new MannequinNetworking.UpdateSevering(1, severingHand == InteractionHand.MAIN_HAND, slim));
+			ClientPlayNetworking.send(new MannequinNetworking.StartSevering(OptionalInt.empty(), severingHand == InteractionHand.MAIN_HAND, slim));
 			MannequinClient.playSeveringSound(player);
 		}
 	}

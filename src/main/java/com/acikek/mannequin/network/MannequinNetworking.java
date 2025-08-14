@@ -6,6 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -13,79 +14,146 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.io.IOException;
+import java.util.OptionalInt;
 
 public class MannequinNetworking {
 
-	// TODO: split up
-	public record UpdateSevering(int ticks, boolean mainHand, boolean slim) implements CustomPacketPayload {
+	public record StartSevering(OptionalInt entityId, boolean mainHand, boolean slim) implements CustomPacketPayload {
 
-		public static final Type<UpdateSevering> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_severing"));
+		public static final Type<StartSevering> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "start_severing"));
 
-		public static final StreamCodec<FriendlyByteBuf, UpdateSevering> STREAM_CODEC = StreamCodec.composite(
-			ByteBufCodecs.INT, UpdateSevering::ticks,
-			ByteBufCodecs.BOOL, UpdateSevering::mainHand,
-			ByteBufCodecs.BOOL, UpdateSevering::slim,
-			UpdateSevering::new
+		public static final StreamCodec<FriendlyByteBuf, StartSevering> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.OPTIONAL_VAR_INT, StartSevering::entityId,
+			ByteBufCodecs.BOOL, StartSevering::mainHand,
+			ByteBufCodecs.BOOL, StartSevering::slim,
+			StartSevering::new
 		);
 
 		@Override
 		public @NotNull Type<? extends CustomPacketPayload> type() {
 			return TYPE;
 		}
+	}
 
-		public static UpdateSevering cancelled() {
-			return new UpdateSevering(0, false, false);
+	public record UpdateSeveringTicksRemaining(int ticksRemaining) implements CustomPacketPayload {
+
+		public static final Type<UpdateSeveringTicksRemaining> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_severing_ticks_remaining"));
+
+		public static final StreamCodec<FriendlyByteBuf, UpdateSeveringTicksRemaining> STREAM_CODEC = ByteBufCodecs.INT.map(UpdateSeveringTicksRemaining::new, UpdateSeveringTicksRemaining::ticksRemaining).cast();
+
+		@Override
+		public @NotNull Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
+	public record StopSevering(OptionalInt entityId) implements CustomPacketPayload {
+
+		public static final Type<StopSevering> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, ""));
+
+		public static final StreamCodec<FriendlyByteBuf, StopSevering> STREAM_CODEC = ByteBufCodecs.OPTIONAL_VAR_INT.map(StopSevering::new, StopSevering::entityId).cast();
+
+		@Override
+		public @NotNull Type<? extends CustomPacketPayload> type() {
+			return TYPE;
 		}
 	}
 
 	public static void register() {
-		PayloadTypeRegistry.playC2S().register(UpdateSevering.TYPE, UpdateSevering.STREAM_CODEC);
-		PayloadTypeRegistry.playS2C().register(UpdateSevering.TYPE, UpdateSevering.STREAM_CODEC);
-		ServerPlayNetworking.registerGlobalReceiver(UpdateSevering.TYPE, (payload, context) -> {
+		PayloadTypeRegistry.playC2S().register(StartSevering.TYPE, StartSevering.STREAM_CODEC);
+		PayloadTypeRegistry.playS2C().register(StartSevering.TYPE, StartSevering.STREAM_CODEC);
+		PayloadTypeRegistry.playS2C().register(UpdateSeveringTicksRemaining.TYPE, UpdateSeveringTicksRemaining.STREAM_CODEC);
+		PayloadTypeRegistry.playC2S().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
+		PayloadTypeRegistry.playS2C().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
+		registerServer();
+	}
+
+	public static void registerServer() {
+		ServerPlayNetworking.registerGlobalReceiver(StartSevering.TYPE, (payload, context) -> {
 			if (!(context.player() instanceof MannequinEntity mannequinEntity)) {
 				return;
 			}
-			if (!c2sTryStartSevering(payload, context, mannequinEntity)) {
-				mannequinEntity.mannequin$stopSevering();
-				context.responseSender().sendPacket(UpdateSevering.cancelled());
+			int severingTicks = tryStartSevering(payload, context.player(), mannequinEntity);
+			if (severingTicks >= 0) {
+				context.responseSender().sendPacket(new UpdateSeveringTicksRemaining(severingTicks));
+				var watcherPayload = new StartSevering(OptionalInt.of(context.player().getId()), payload.mainHand(), payload.slim());
+				for (var watcher : PlayerLookup.tracking(context.player())) {
+					ServerPlayNetworking.send(watcher, watcherPayload);
+				}
+			}
+			else {
+				s2cStopSevering(context, mannequinEntity, true);
+			}
+		});
+		ServerPlayNetworking.registerGlobalReceiver(StopSevering.TYPE, (payload, context) -> {
+			if (context.player() instanceof MannequinEntity mannequinEntity) {
+				s2cStopSevering(context, mannequinEntity, false);
 			}
 		});
 	}
 
 	@Environment(EnvType.CLIENT)
 	public static void registerClient() {
-		ClientPlayNetworking.registerGlobalReceiver(UpdateSevering.TYPE, (payload, context) -> {
-			if (!(context.player() instanceof MannequinEntity mannequinEntity)) {
+		ClientPlayNetworking.registerGlobalReceiver(StartSevering.TYPE, (payload, context) -> {
+			if (payload.entityId().isEmpty()) {
 				return;
 			}
-			if (payload.ticks() <= 0) {
-				mannequinEntity.mannequin$stopSevering();
+			try (var level = context.player().level()) {
+				var entity = level.getEntity(payload.entityId().getAsInt());
+				if (entity instanceof Player player && player instanceof MannequinEntity mannequinEntity) {
+					tryStartSevering(payload, player, mannequinEntity);
+				}
 			}
-			else {
-				mannequinEntity.mannequin$setSeveringTicksRemaining(payload.ticks());
+			catch (IOException ignored) {
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(UpdateSeveringTicksRemaining.TYPE, (payload, context) -> {
+			if (context.player() instanceof MannequinEntity mannequinEntity) {
+				mannequinEntity.mannequin$setSeveringTicksRemaining(payload.ticksRemaining());
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(StopSevering.TYPE, (payload, context) -> {
+			try (var level = context.player().level()) {
+				var entity = payload.entityId().isPresent() ? level.getEntity(payload.entityId().getAsInt()) : context.player();
+				if (entity instanceof MannequinEntity mannequinEntity) {
+					mannequinEntity.mannequin$stopSevering();
+				}
+			}
+			catch (IOException ignored) {
 			}
 		});
 	}
 
-	// FIXME
-	public static boolean c2sTryStartSevering(UpdateSevering payload, ServerPlayNetworking.Context context, MannequinEntity mannequinEntity) {
-		if (payload.ticks() <= 0) {
-			return false;
-		}
+	public static int tryStartSevering(StartSevering payload, Player player, MannequinEntity mannequinEntity) {
 		if (mannequinEntity.mannequin$isSevering()) {
-			return true;
+			return -1;
 		}
+		System.out.println("a");
 		var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-		var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(context.player(), context.player().getItemInHand(hand), hand);
+		var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(player, player.getItemInHand(hand), hand);
 		if (limbToSever != null && !limbToSever.severed) {
-			int severingTicks = limbToSever.getSeveringTicks(context.player());
+			System.out.println("b");
+			int severingTicks = limbToSever.getSeveringTicks(player);
+			System.out.println(severingTicks);
 			mannequinEntity.mannequin$startSevering(limbToSever, hand, severingTicks);
 			mannequinEntity.mannequin$setSlim(payload.slim());
-			context.responseSender().sendPacket(new UpdateSevering(severingTicks, false, false));
-			// TODO: send to watching players
-			return true;
+			return severingTicks;
 		}
-		return false;
+		return -1;
+	}
+
+	public static void s2cStopSevering(ServerPlayNetworking.Context context, MannequinEntity mannequinEntity, boolean force) {
+		mannequinEntity.mannequin$stopSevering();
+		if (force) {
+			context.responseSender().sendPacket(new StopSevering(OptionalInt.empty()));
+		}
+		var watcherPayload = new StopSevering(OptionalInt.of(context.player().getId()));
+		for (var watcher : PlayerLookup.tracking(context.player())) {
+			ServerPlayNetworking.send(watcher, watcherPayload);
+		}
 	}
 }
