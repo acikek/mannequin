@@ -20,8 +20,11 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
 import java.util.OptionalInt;
 
 public class MannequinNetworking {
@@ -67,7 +70,7 @@ public class MannequinNetworking {
 		}
 	}
 
-	public record UpdateLimb(int entityId, boolean mainHand, LimbType limbType, LimbOrientation limbOrientation, boolean severed) implements CustomPacketPayload {
+	public record UpdateLimb(int entityId, boolean mainHand, LimbType limbType, LimbOrientation limbOrientation, boolean severed, Optional<ResolvableProfile> profile) implements CustomPacketPayload {
 
 		public static final Type<UpdateLimb> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_limb"));
 
@@ -77,6 +80,7 @@ public class MannequinNetworking {
 			LimbType.STREAM_CODEC, UpdateLimb::limbType,
 			LimbOrientation.STREAM_CODEC, UpdateLimb::limbOrientation,
 			ByteBufCodecs.BOOL, UpdateLimb::severed,
+			ByteBufCodecs.optional(ResolvableProfile.STREAM_CODEC), UpdateLimb::profile,
 			UpdateLimb::new
 		);
 
@@ -110,7 +114,7 @@ public class MannequinNetworking {
 				}
 			}
 			else if (result.severedLimb() != null) {
-				var watcherPayload = new UpdateLimb(context.player().getId(), payload.mainHand(), result.severedLimb().type, result.severedLimb().orientation, true);
+				var watcherPayload = new UpdateLimb(context.player().getId(), payload.mainHand(), result.severedLimb().type, result.severedLimb().orientation, true, Optional.empty());
 				for (var watcher : PlayerLookup.tracking(context.player())) {
 					ServerPlayNetworking.send(watcher, watcherPayload);
 				}
@@ -161,8 +165,8 @@ public class MannequinNetworking {
 						player.swing(hand);
 					}
 				}
-				else {
-					mannequinEntity.mannequin$attach(limb);
+				else if (payload.profile().isPresent()) {
+					mannequinEntity.mannequin$attach(limb, payload.profile().get());
 				}
 			}
 		});

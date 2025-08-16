@@ -1,5 +1,6 @@
 package com.acikek.mannequin.mixin.client;
 
+import com.acikek.mannequin.client.render.CustomLimbsLayer;
 import com.acikek.mannequin.client.render.PlayerBloodLayer;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinRenderState;
@@ -24,6 +25,7 @@ public class PlayerRendererMixin {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void mannequin$addBloodRenderer(EntityRendererProvider.Context context, boolean bl, CallbackInfo ci) {
 		((LivingEntityRendererAccessor<AbstractClientPlayer, PlayerRenderState, PlayerModel>) this).callAddLayer(new PlayerBloodLayer((PlayerRenderer) (Object) this));
+		((LivingEntityRendererAccessor<AbstractClientPlayer, PlayerRenderState, PlayerModel>) this).callAddLayer(new CustomLimbsLayer((PlayerRenderer) (Object) this, context));
 	}
 
 	@Inject(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V", at = @At("TAIL"))

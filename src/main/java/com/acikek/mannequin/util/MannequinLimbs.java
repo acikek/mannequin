@@ -7,6 +7,9 @@ import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Collections;
+import java.util.List;
+
 public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, MannequinLimb leftArm, MannequinLimb rightArm, MannequinLimb torso) {
 
 	public MannequinLimbs() {
@@ -17,6 +20,10 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 			new MannequinLimb(LimbType.ARM, LimbOrientation.RIGHT),
 			new MannequinLimb(LimbType.TORSO, LimbOrientation.NONE)
 		);
+	}
+
+	public List<MannequinLimb> getParts() {
+		return List.of(leftLeg, rightLeg, leftArm, rightArm, torso);
 	}
 
 	public MannequinLimb resolve(LivingEntity entity, ItemStack stack, InteractionHand hand) {
@@ -38,12 +45,12 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 			case LEG -> switch (limbOrientation) {
 				case LEFT -> leftLeg;
 				case RIGHT -> rightLeg;
-				default -> throw new IllegalStateException();
+				default -> null;
 			};
 			case ARM -> switch (limbOrientation) {
 				case LEFT -> leftArm;
 				case RIGHT -> rightArm;
-				default -> throw new IllegalStateException();
+				default -> null;
 			};
 			case TORSO -> torso;
 		};

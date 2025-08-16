@@ -2,14 +2,19 @@ package com.acikek.mannequin.item;
 
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
+import com.acikek.mannequin.util.MannequinEntity;
 import com.mojang.serialization.Codec;
 import net.minecraft.advancements.critereon.SingleComponentItemPredicate;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +35,21 @@ public class LimbItem extends Item {
 	public LimbItem(Properties properties, LimbType limbType) {
 		super(properties);
 		this.limbType = limbType;
+	}
+
+	@Override
+	public @NotNull InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
+		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$isDoll()) {
+			return super.use(level, player, interactionHand);
+		}
+		var stack = player.getItemInHand(interactionHand);
+		var orientation = stack.getOrDefault(LimbOrientation.DATA_COMPONENT_TYPE, LimbOrientation.NONE);
+		var limbToAttach = mannequinEntity.mannequin$getLimbs().resolve(limbType, orientation);
+		if (limbToAttach == null) {
+			return super.use(level, player, interactionHand);
+		}
+		mannequinEntity.mannequin$attach(limbToAttach, stack.get(DataComponents.PROFILE));
+		return InteractionResult.SUCCESS;
 	}
 
 	@Override

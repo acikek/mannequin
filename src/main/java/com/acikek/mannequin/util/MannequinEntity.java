@@ -1,6 +1,7 @@
 package com.acikek.mannequin.util;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.Nullable;
 
 public interface MannequinEntity {
@@ -35,5 +36,5 @@ public interface MannequinEntity {
 
 	void mannequin$sever(MannequinLimb limb, InteractionHand hand);
 
-	void mannequin$attach(MannequinLimb limb);
+	void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile);
 }

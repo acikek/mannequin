@@ -20,6 +20,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
@@ -247,10 +248,13 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	}
 
 	@Override
-	public void mannequin$attach(MannequinLimb limb) {
+	public void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile) {
 		limb.severed = false;
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(SoundEvents.WOOD_PLACE);
+		if (((LivingEntity) (Object) this).level().isClientSide() && (profile == null || !(((LivingEntity) (Object) this) instanceof Player player) || !profile.gameProfile().getId().equals(player.getUUID()))) {
+			limb.setSkin(profile);
+		}
 	}
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
