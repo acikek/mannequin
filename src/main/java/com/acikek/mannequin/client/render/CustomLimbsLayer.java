@@ -2,6 +2,7 @@ package com.acikek.mannequin.client.render;
 
 import com.acikek.mannequin.util.MannequinRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -36,10 +37,14 @@ public class CustomLimbsLayer extends RenderLayer<PlayerRenderState, PlayerModel
 		slim.setupAnim(entityRenderState);
 		mannequinRenderState.mannequin$setLimbs(limbs);
 		for (var limb : mannequinRenderState.mannequin$getLimbs().getParts()) {
-			if (limb.skin == null) {
+			if (limb.severed) {
 				continue;
 			}
-			var model = limb.skin.model() == PlayerSkin.Model.WIDE ? wide : slim;
+			var skin = limb.profile.isResolved() ? Minecraft.getInstance().getSkinManager().getInsecureSkin(limb.profile.gameProfile(), null) : DefaultPlayerSkin.getDefaultSkin();
+			if (skin == null) {
+				continue;
+			}
+			var model = skin.model() == PlayerSkin.Model.WIDE ? wide : slim;
 			var part = switch (limb.type) {
 				case LEG -> switch (limb.orientation) {
 					case LEFT -> model.leftLeg;
@@ -56,7 +61,7 @@ public class CustomLimbsLayer extends RenderLayer<PlayerRenderState, PlayerModel
 			if (part == null) {
 				continue;
 			}
-			var renderType = RenderType.entityTranslucent(limb.skin.texture());
+			var renderType = RenderType.entityTranslucent(skin.texture());
 			var vertexConsumer = multiBufferSource.getBuffer(renderType);
 			part.render(poseStack, vertexConsumer, i, OverlayTexture.NO_OVERLAY);
 		}

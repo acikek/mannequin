@@ -303,11 +303,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Override
 	public void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile) {
 		limb.severed = false;
+		limb.profile = profile;
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(SoundEvents.WOOD_PLACE);
-		if (((LivingEntity) (Object) this).level().isClientSide() && (profile == null || !(((LivingEntity) (Object) this) instanceof Player player) || !profile.gameProfile().getId().equals(player.getUUID()))) {
-			limb.setSkin(profile);
-		}
 	}
 
 	@Override

@@ -45,10 +45,11 @@ public class LimbItem extends Item {
 		var stack = player.getItemInHand(interactionHand);
 		var orientation = stack.getOrDefault(LimbOrientation.DATA_COMPONENT_TYPE, LimbOrientation.NONE);
 		var limbToAttach = mannequinEntity.mannequin$getLimbs().resolve(limbType, orientation);
-		if (limbToAttach == null) {
+		if (limbToAttach == null || !limbToAttach.severed) {
 			return super.use(level, player, interactionHand);
 		}
 		mannequinEntity.mannequin$attach(limbToAttach, stack.get(DataComponents.PROFILE));
+		stack.consume(1, player);
 		return InteractionResult.SUCCESS;
 	}
 

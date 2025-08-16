@@ -6,6 +6,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +21,14 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 			new MannequinLimb(LimbType.ARM, LimbOrientation.RIGHT),
 			new MannequinLimb(LimbType.TORSO, LimbOrientation.NONE)
 		);
+	}
+
+	public void setProfile(ResolvableProfile profile) {
+		leftLeg.profile = profile;
+		rightLeg.profile = profile;
+		leftArm.profile = profile;
+		rightArm.profile = profile;
+		torso.profile = profile;
 	}
 
 	public List<MannequinLimb> getParts() {

@@ -22,10 +22,10 @@ public class PlayerModelMixin {
 			return;
 		}
 		var model = ((HumanoidModel<?>) (Object) this);
-		model.leftLeg.visible = limbs.leftLeg().isBaseVisible();
-		model.rightLeg.visible = limbs.rightLeg().isBaseVisible();
-		model.leftArm.visible = limbs.leftArm().isBaseVisible();
-		model.rightArm.visible = limbs.rightArm().isBaseVisible();
-		model.body.visible = limbs.torso().isBaseVisible();
+		model.leftLeg.visible = limbs.leftLeg().isBaseVisible(mannequinRenderState.mannequin$getProfile());
+		model.rightLeg.visible = limbs.rightLeg().isBaseVisible(mannequinRenderState.mannequin$getProfile());
+		model.leftArm.visible = limbs.leftArm().isBaseVisible(mannequinRenderState.mannequin$getProfile());
+		model.rightArm.visible = limbs.rightArm().isBaseVisible(mannequinRenderState.mannequin$getProfile());
+		model.body.visible = limbs.torso().isBaseVisible(mannequinRenderState.mannequin$getProfile());
 	}
 }

@@ -2,16 +2,11 @@ package com.acikek.mannequin.util;
 
 import com.acikek.mannequin.item.LimbItem;
 import com.acikek.mannequin.item.MannequinItems;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.DefaultPlayerSkin;
-import net.minecraft.client.resources.PlayerSkin;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
-import org.jetbrains.annotations.Nullable;
 
 public class MannequinLimb {
 
@@ -19,18 +14,17 @@ public class MannequinLimb {
 	public final LimbOrientation orientation;
 
 	public boolean severed;
+	public ResolvableProfile profile;
 
-	@Environment(EnvType.CLIENT)
-	public @Nullable PlayerSkin skin;
-
-	public MannequinLimb(LimbType type, LimbOrientation orientation, boolean severed) {
+	public MannequinLimb(LimbType type, LimbOrientation orientation, boolean severed, ResolvableProfile profile) {
 		this.type = type;
 		this.orientation = orientation;
 		this.severed = severed;
+		this.profile = profile;
 	}
 
 	public MannequinLimb(LimbType type, LimbOrientation orientation) {
-		this(type, orientation, false);
+		this(type, orientation, false, null);
 	}
 
 	public ItemStack getLimbItemStack(Player player) {
@@ -39,7 +33,7 @@ public class MannequinLimb {
 		}
 		var stack = (type == LimbType.LEG ? MannequinItems.LEG : MannequinItems.ARM).getDefaultInstance();
 		stack.set(LimbOrientation.DATA_COMPONENT_TYPE, orientation);
-		stack.set(DataComponents.PROFILE, new ResolvableProfile(player.getGameProfile()));
+		stack.set(DataComponents.PROFILE, profile != null ? profile : new ResolvableProfile(player.getGameProfile()));
 		if (player instanceof MannequinEntity mannequinEntity) {
 			stack.set(LimbItem.SLIM_COMPONENT_TYPE, mannequinEntity.mannequin$isSlim());
 		}
@@ -60,19 +54,10 @@ public class MannequinLimb {
 		return -1;
 	}
 
-	@Environment(EnvType.CLIENT)
-	public void setSkin(@Nullable ResolvableProfile profile) {
-		if (profile == null) {
-			skin = DefaultPlayerSkin.getDefaultSkin();
-			return;
+	public boolean isBaseVisible(GameProfile profile) {
+		if (severed) {
+			System.out.println("severed " + orientation + " " + type);
 		}
-		if (profile.isResolved()) {
-			skin = Minecraft.getInstance().getSkinManager().getInsecureSkin(profile.gameProfile(), null);
-		}
-	}
-
-	@Environment(EnvType.CLIENT)
-	public boolean isBaseVisible() {
-		return !severed && skin == null;
+		return !severed && this.profile.gameProfile() == profile;
 	}
 }

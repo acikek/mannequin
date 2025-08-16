@@ -32,6 +32,7 @@ public class PlayerRendererMixin {
 	private void mannequin$extractMannequinRenderState(AbstractClientPlayer abstractClientPlayer, PlayerRenderState playerRenderState, float f, CallbackInfo ci) {
 		if (abstractClientPlayer instanceof MannequinEntity mannequinEntity && playerRenderState instanceof MannequinRenderState mannequinRenderState) {
 			mannequinRenderState.mannequin$setLimbs(mannequinEntity.mannequin$getLimbs());
+			mannequinRenderState.mannequin$setProfile(abstractClientPlayer.getGameProfile());
 		}
 	}
 
