@@ -7,8 +7,11 @@ import com.acikek.mannequin.util.MannequinLimbs;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -39,6 +42,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Shadow
 	public abstract void makeSound(@Nullable SoundEvent soundEvent);
 
+	@Shadow
+	public abstract boolean hasEffect(Holder<MobEffect> holder);
+
 	@Unique
 	private final MannequinLimbs limbs = new MannequinLimbs();
 
@@ -55,10 +61,20 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	private int severingTicksRemaining;
 
 	@Unique
+	private int damageTicksElapsed;
+
+	@Unique
+	private int ticksToBleed;
+
+	@Unique
+	private int totalBleedingTicks;
+
+	@Unique
 	private boolean slim;
 
 	@Inject(method = "tick", at = @At("HEAD"))
-	private void mannequin$tickSevering(CallbackInfo ci) {
+	private void mannequin$tick(CallbackInfo ci) {
+		mannequin$tickDamage();
 		if (!severing) {
 			return;
 		}
@@ -69,11 +85,38 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	}
 
 	@Unique
+	private void mannequin$tickDamage() {
+		if (!severing && (ticksToBleed > 0 && damageTicksElapsed >= ticksToBleed)) {
+			damageTicksElapsed = 0;
+			ticksToBleed = 0;
+			return;
+		}
+		if (!severing && ticksToBleed == 0) {
+			return;
+		}
+		damageTicksElapsed++;
+		if (ticksToBleed > 0) {
+			totalBleedingTicks++;
+			System.out.println(totalBleedingTicks);
+			if (totalBleedingTicks >= 600) {
+				System.out.println("DOLL!!!");
+			}
+		}
+		if ((severing || !hasEffect(MobEffects.SLOW_FALLING)) && damageTicksElapsed % (severing ? 10 : 20) == 0 && ((LivingEntity) (Object) this).level() instanceof ServerLevel serverLevel) {
+			var damageSource = ((LivingEntity) (Object) this).level().damageSources().source(Mannequin.BLEEDING_DAMAGE_TYPE);
+			var velocity = ((LivingEntity) (Object) this).getDeltaMovement();
+			((LivingEntity) (Object) this).hurtServer(serverLevel, damageSource, severing ? 2.0F : 1.0F);
+			((LivingEntity) (Object) this).setDeltaMovement(velocity.multiply(0.3, 0.3, 0.3));
+		}
+	}
+
+	@Unique
 	private void mannequin$sever() {
 		if (severingLimb == null) {
 			return;
 		}
 		severingLimb.severed = true;
+		ticksToBleed = damageTicksElapsed * 2;
 		if (((LivingEntity) (Object) this) instanceof Player player) {
 			var stack = severingLimb.getLimbItemStack(player);
 			if (!stack.isEmpty()) {
@@ -174,6 +217,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		severingLimb = null;
 		severingHand = null;
 		severingTicksRemaining = 0;
+		damageTicksElapsed = 0;
 		var attribute = getAttribute(Attributes.MOVEMENT_SPEED);
 		if (attribute != null) {
 			attribute.removeModifier(Mannequin.SEVERING_SLOWNESS);

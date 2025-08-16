@@ -1,6 +1,7 @@
 package com.acikek.mannequin.network;
 
 import com.acikek.mannequin.Mannequin;
+import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.util.MannequinEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -102,13 +103,11 @@ public class MannequinNetworking {
 			if (payload.entityId().isEmpty()) {
 				return;
 			}
-			try (var level = context.player().level()) {
-				var entity = level.getEntity(payload.entityId().getAsInt());
-				if (entity instanceof Player player && player instanceof MannequinEntity mannequinEntity) {
-					tryStartSevering(payload, player, mannequinEntity);
+			var entity = context.player().level().getEntity(payload.entityId().getAsInt());
+			if (entity instanceof Player player && player instanceof MannequinEntity mannequinEntity) {
+				if (tryStartSevering(payload, player, mannequinEntity) >= 0) {
+					MannequinClient.playSeveringSound(player);
 				}
-			}
-			catch (IOException ignored) {
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(UpdateSeveringTicksRemaining.TYPE, (payload, context) -> {
@@ -117,13 +116,9 @@ public class MannequinNetworking {
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(StopSevering.TYPE, (payload, context) -> {
-			try (var level = context.player().level()) {
-				var entity = payload.entityId().isPresent() ? level.getEntity(payload.entityId().getAsInt()) : context.player();
-				if (entity instanceof MannequinEntity mannequinEntity) {
-					mannequinEntity.mannequin$stopSevering();
-				}
-			}
-			catch (IOException ignored) {
+			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
+			if (entity instanceof MannequinEntity mannequinEntity) {
+				mannequinEntity.mannequin$stopSevering();
 			}
 		});
 	}

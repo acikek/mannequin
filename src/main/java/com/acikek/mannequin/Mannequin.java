@@ -5,7 +5,10 @@ import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.sound.MannequinSounds;
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import org.slf4j.Logger;
@@ -19,6 +22,8 @@ public class Mannequin implements ModInitializer {
 
 	public static final EntityDimensions LEGLESS_DIMENSIONS = EntityDimensions.scalable(0.6F, 1.1F);
 	public static final AttributeModifier SEVERING_SLOWNESS = new AttributeModifier(ResourceLocation.fromNamespaceAndPath(MOD_ID, "severing_slowness"), -0.65, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+
+	public static final ResourceKey<DamageType> BLEEDING_DAMAGE_TYPE = ResourceKey.create(Registries.DAMAGE_TYPE, ResourceLocation.fromNamespaceAndPath(MOD_ID, "bleeding"));
 
 	@Override
 	public void onInitialize() {
