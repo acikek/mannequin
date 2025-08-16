@@ -32,4 +32,20 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 		}
 		return null; // TODO
 	}
+
+	public MannequinLimb resolve(LimbType limbType, LimbOrientation limbOrientation) {
+		return switch (limbType) {
+			case LEG -> switch (limbOrientation) {
+				case LEFT -> leftLeg;
+				case RIGHT -> rightLeg;
+				default -> throw new IllegalStateException();
+			};
+			case ARM -> switch (limbOrientation) {
+				case LEFT -> leftArm;
+				case RIGHT -> rightArm;
+				default -> throw new IllegalStateException();
+			};
+			case TORSO -> torso;
+		};
+	}
 }

@@ -11,6 +11,8 @@ public interface MannequinEntity {
 
 	void mannequin$setSevering(boolean severing);
 
+	boolean mannequin$isDoll();
+
 	@Nullable MannequinLimb mannequin$getSeveringLimb();
 
 	void mannequin$setSeveringLimb(MannequinLimb limb);
@@ -30,4 +32,8 @@ public interface MannequinEntity {
 	void mannequin$startSevering(MannequinLimb limbToSever, InteractionHand hand, int ticks);
 
 	void mannequin$stopSevering();
+
+	void mannequin$sever(MannequinLimb limb, InteractionHand hand);
+
+	void mannequin$attach(MannequinLimb limb);
 }

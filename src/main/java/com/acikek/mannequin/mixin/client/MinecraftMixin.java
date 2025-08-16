@@ -75,10 +75,16 @@ public class MinecraftMixin {
 	private void mannequin$tryStartSevering(CallbackInfo ci) {
 		if (player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
 			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-			mannequinEntity.mannequin$startSevering(limbToSever, severingHand, Integer.MAX_VALUE);
 			mannequinEntity.mannequin$setSlim(slim);
-			ClientPlayNetworking.send(new MannequinNetworking.StartSevering(OptionalInt.empty(), severingHand == InteractionHand.MAIN_HAND, slim));
-			MannequinClient.playSeveringSound(player);
+			if (mannequinEntity.mannequin$isDoll()) {
+				mannequinEntity.mannequin$sever(limbToSever, severingHand);
+				player.swing(severingHand);
+			}
+			else {
+				mannequinEntity.mannequin$startSevering(limbToSever, severingHand, Integer.MAX_VALUE);
+				ClientPlayNetworking.send(new MannequinNetworking.StartSevering(OptionalInt.empty(), severingHand == InteractionHand.MAIN_HAND, slim));
+				MannequinClient.playSeveringSound(player);
+			}
 		}
 	}
 

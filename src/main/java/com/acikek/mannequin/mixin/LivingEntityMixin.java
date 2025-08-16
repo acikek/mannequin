@@ -9,6 +9,7 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffects;
@@ -52,6 +53,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	private boolean severing;
 
 	@Unique
+	private boolean doll;
+
+	@Unique
 	private @Nullable MannequinLimb severingLimb;
 
 	@Unique
@@ -75,31 +79,32 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void mannequin$tick(CallbackInfo ci) {
 		mannequin$tickDamage();
-		if (!severing) {
-			return;
-		}
-		severingTicksRemaining--;
-		if (severingTicksRemaining <= 0) {
-			mannequin$sever();
+		if (severing) {
+			severingTicksRemaining--;
+			if (severingTicksRemaining <= 0) {
+				mannequin$sever();
+			}
 		}
 	}
 
 	@Unique
 	private void mannequin$tickDamage() {
+		if (doll || (!severing && ticksToBleed == 0)) {
+			return;
+		}
 		if (!severing && (ticksToBleed > 0 && damageTicksElapsed >= ticksToBleed)) {
 			damageTicksElapsed = 0;
 			ticksToBleed = 0;
-			return;
-		}
-		if (!severing && ticksToBleed == 0) {
 			return;
 		}
 		damageTicksElapsed++;
 		if (ticksToBleed > 0) {
 			totalBleedingTicks++;
 			System.out.println(totalBleedingTicks);
-			if (totalBleedingTicks >= 600) {
-				System.out.println("DOLL!!!");
+			if (totalBleedingTicks >= 20) {
+				mannequin$makeDoll();
+				System.out.println("doll");
+				return;
 			}
 		}
 		if ((severing || !hasEffect(MobEffects.SLOW_FALLING)) && damageTicksElapsed % (severing ? 10 : 20) == 0 && ((LivingEntity) (Object) this).level() instanceof ServerLevel serverLevel) {
@@ -112,23 +117,20 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Unique
 	private void mannequin$sever() {
-		if (severingLimb == null) {
+		if (severingLimb == null || severingHand == null) {
 			return;
 		}
-		severingLimb.severed = true;
 		ticksToBleed = damageTicksElapsed * 2;
-		if (((LivingEntity) (Object) this) instanceof Player player) {
-			var stack = severingLimb.getLimbItemStack(player);
-			if (!stack.isEmpty()) {
-				player.addItem(stack);
-			}
-		}
-		if (severingHand != null) {
-			getItemInHand(severingHand).hurtAndBreak(5, (LivingEntity) (Object) this, severingHand);
-		}
-		mannequin$stopSevering();
-		((LivingEntity) (Object) this).refreshDimensions();
-		makeSound(MannequinSounds.LIMB_SNAP);
+		mannequin$sever(severingLimb, severingHand);
+	}
+
+	@Unique
+	private void mannequin$makeDoll() {
+		damageTicksElapsed = 0;
+		totalBleedingTicks = 0;
+		ticksToBleed = 0;
+		doll = true;
+		makeSound(SoundEvents.WITHER_SKELETON_AMBIENT);
 	}
 
 	@Inject(method = "stopUsingItem", at = @At("HEAD"))
@@ -157,6 +159,11 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Override
 	public void mannequin$setSevering(boolean severing) {
 		this.severing = severing;
+	}
+
+	@Override
+	public boolean mannequin$isDoll() {
+		return doll;
 	}
 
 	@Override
@@ -222,6 +229,28 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		if (attribute != null) {
 			attribute.removeModifier(Mannequin.SEVERING_SLOWNESS);
 		}
+	}
+
+	@Override
+	public void mannequin$sever(MannequinLimb limb, InteractionHand hand) {
+		limb.severed = true;
+		if (((LivingEntity) (Object) this) instanceof Player player) {
+			var stack = limb.getLimbItemStack(player);
+			if (!stack.isEmpty()) {
+				player.addItem(stack);
+			}
+		}
+		getItemInHand(hand).hurtAndBreak(5, (LivingEntity) (Object) this, hand);
+		mannequin$stopSevering();
+		((LivingEntity) (Object) this).refreshDimensions();
+		makeSound(MannequinSounds.LIMB_SNAP);
+	}
+
+	@Override
+	public void mannequin$attach(MannequinLimb limb) {
+		limb.severed = false;
+		((LivingEntity) (Object) this).refreshDimensions();
+		makeSound(SoundEvents.WOOD_PLACE);
 	}
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
