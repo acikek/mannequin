@@ -8,10 +8,10 @@ import com.acikek.mannequin.util.MannequinLimb;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -99,6 +99,18 @@ public class MannequinNetworking {
 		}
 	}
 
+	public record RequestDataUpdate(int entityId) implements CustomPacketPayload {
+
+		public static final Type<RequestDataUpdate> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "request_data_update"));
+
+		public static final StreamCodec<FriendlyByteBuf, RequestDataUpdate> STREAM_CODEC = ByteBufCodecs.INT.map(RequestDataUpdate::new, RequestDataUpdate::entityId).cast();
+
+		@Override
+		public @NotNull Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public static void register() {
 		PayloadTypeRegistry.playC2S().register(StartSevering.TYPE, StartSevering.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(StartSevering.TYPE, StartSevering.STREAM_CODEC);
@@ -107,6 +119,7 @@ public class MannequinNetworking {
 		PayloadTypeRegistry.playS2C().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateLimb.TYPE, UpdateLimb.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateMannequinEntityData.TYPE, UpdateMannequinEntityData.STREAM_CODEC);
+		PayloadTypeRegistry.playC2S().register(RequestDataUpdate.TYPE, RequestDataUpdate.STREAM_CODEC);
 		registerServer();
 	}
 
@@ -138,50 +151,9 @@ public class MannequinNetworking {
 				stopSevering(context, mannequinEntity, false);
 			}
 		});
-	}
-
-	@Environment(EnvType.CLIENT)
-	public static void registerClient() {
-		ClientPlayNetworking.registerGlobalReceiver(StartSevering.TYPE, (payload, context) -> {
-			if (payload.entityId().isEmpty()) {
-				return;
-			}
-			var entity = context.player().level().getEntity(payload.entityId().getAsInt());
-			if (entity instanceof Player player && player instanceof MannequinEntity mannequinEntity) {
-				if (tryStartSevering(payload, player, mannequinEntity).active()) {
-					MannequinClient.playSeveringSound(player);
-				}
-			}
-		});
-		ClientPlayNetworking.registerGlobalReceiver(UpdateSeveringTicksRemaining.TYPE, (payload, context) -> {
-			if (context.player() instanceof MannequinEntity mannequinEntity) {
-				mannequinEntity.mannequin$getData().severingTicksRemaining = payload.ticksRemaining();
-			}
-		});
-		ClientPlayNetworking.registerGlobalReceiver(StopSevering.TYPE, (payload, context) -> {
-			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
-			if (entity instanceof MannequinEntity mannequinEntity) {
-				mannequinEntity.mannequin$stopSevering();
-			}
-		});
-		ClientPlayNetworking.registerGlobalReceiver(UpdateLimb.TYPE, (payload, context) -> {
-			var entity = context.player().level().getEntity(payload.entityId());
-			if (entity instanceof MannequinEntity mannequinEntity) {
-				var limb = mannequinEntity.mannequin$getData().limbs.resolve(payload.limb().type, payload.limb().orientation);
-				if (payload.limb().severed) {
-					var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-					mannequinEntity.mannequin$sever(limb, hand);
-					if (entity instanceof LocalPlayer player) {
-						player.swing(hand);
-					}
-				}
-				else payload.limb().profile.ifPresent(profile -> mannequinEntity.mannequin$attach(limb, profile));
-			}
-		});
-		ClientPlayNetworking.registerGlobalReceiver(UpdateMannequinEntityData.TYPE, (payload, context) -> {
-			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
-			if (entity instanceof MannequinEntity mannequinEntity) {
-				mannequinEntity.mannequin$setData(payload.data());
+		ServerPlayNetworking.registerGlobalReceiver(RequestDataUpdate.TYPE, (payload, context) -> {
+			if (context.player().level().getEntity(payload.entityId()) instanceof MannequinEntity mannequinEntity) {
+				context.responseSender().sendPacket(new UpdateMannequinEntityData(OptionalInt.of(payload.entityId()), mannequinEntity.mannequin$getData()));
 			}
 		});
 	}

@@ -28,7 +28,7 @@ public class SeveringSoundInstance extends AbstractTickableSoundInstance {
 		x = player.getX();
 		y = player.getY();
 		z = player.getZ();
-		volume = 1.0F;
+		volume = 0.7F;
 		pitch = 1.0F;
 	}
 }

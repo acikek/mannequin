@@ -6,12 +6,16 @@ import com.acikek.mannequin.client.render.LimbSpecialRenderer;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
+import com.acikek.mannequin.util.MannequinEntity;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 
 public class MannequinClient implements ClientModInitializer {
@@ -32,11 +36,61 @@ public class MannequinClient implements ClientModInitializer {
 		EntityModelLayerRegistry.registerModelLayer(LEFT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.LEFT, true));
 		EntityModelLayerRegistry.registerModelLayer(RIGHT_ARM_SLIM_LAYER, () -> LimbModel.createLayer(LimbType.ARM, LimbOrientation.RIGHT, true));
 		SpecialModelRenderers.ID_MAPPER.put(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "limb"), LimbSpecialRenderer.Unbaked.MAP_CODEC);
-		MannequinNetworking.registerClient();
+		registerNetworking();
 	}
 
 	public static void playSeveringSound(Player player) {
 		Minecraft.getInstance().getSoundManager().play(new SeveringSoundInstance(player));
+	}
+
+	public static void registerNetworking() {
+		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.StartSevering.TYPE, (payload, context) -> {
+			if (payload.entityId().isEmpty()) {
+				return;
+			}
+			var entity = context.player().level().getEntity(payload.entityId().getAsInt());
+			if (entity instanceof Player player && player instanceof MannequinEntity mannequinEntity) {
+				if (MannequinNetworking.tryStartSevering(payload, player, mannequinEntity).active()) {
+					MannequinClient.playSeveringSound(player);
+				}
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateSeveringTicksRemaining.TYPE, (payload, context) -> {
+			if (context.player() instanceof MannequinEntity mannequinEntity) {
+				mannequinEntity.mannequin$getData().severingTicksRemaining = payload.ticksRemaining();
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.StopSevering.TYPE, (payload, context) -> {
+			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
+			if (entity instanceof MannequinEntity mannequinEntity) {
+				mannequinEntity.mannequin$stopSevering();
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateLimb.TYPE, (payload, context) -> {
+			var entity = context.player().level().getEntity(payload.entityId());
+			if (entity instanceof MannequinEntity mannequinEntity) {
+				var limb = mannequinEntity.mannequin$getData().limbs.resolve(payload.limb().type, payload.limb().orientation);
+				if (payload.limb().severed) {
+					var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+					mannequinEntity.mannequin$sever(limb, hand);
+					if (entity instanceof Player player) {
+						player.swing(hand);
+					}
+				}
+				else payload.limb().profile.ifPresent(profile -> mannequinEntity.mannequin$attach(limb, profile));
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateMannequinEntityData.TYPE, (payload, context) -> {
+			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
+			if (entity instanceof MannequinEntity mannequinEntity) {
+				mannequinEntity.mannequin$setData(payload.data());
+			}
+		});
+		ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+			if (entity instanceof MannequinEntity) {
+				ClientPlayNetworking.send(new MannequinNetworking.RequestDataUpdate(entity.getId()));
+			}
+		});
 	}
 
 	/*public static TextureSheetParticle createBloodHang(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {
