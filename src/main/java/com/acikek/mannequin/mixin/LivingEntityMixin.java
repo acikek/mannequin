@@ -33,6 +33,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Optional;
+
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin implements MannequinEntity {
 
@@ -64,7 +66,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	public abstract void setItemInHand(InteractionHand interactionHand, ItemStack itemStack);
 
 	@Unique
-	private final MannequinLimbs limbs = new MannequinLimbs();
+	private MannequinLimbs limbs = new MannequinLimbs();
 
 	@Unique
 	private boolean severing;
@@ -303,7 +305,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Override
 	public void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile) {
 		limb.severed = false;
-		limb.profile = profile;
+		limb.profile = Optional.ofNullable(profile);
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(SoundEvents.WOOD_PLACE);
 	}
@@ -320,14 +322,45 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
 	private void mannequin$addSaveData(ValueOutput valueOutput, CallbackInfo ci) {
-		//valueOutput.storeNullable("mannequin$severed_limbs", SeveredLimb.LIST_CODEC, severedLimbs);
+		if (!(((LivingEntity) (Object) this) instanceof Player)) {
+			return;
+		}
+		var data = valueOutput.child("mannequin$mannequin_entity");
+		data.store("limbs", MannequinLimbs.CODEC, limbs);
+		data.putBoolean("severing", severing);
+		data.putBoolean("doll", doll);
+		if (severingLimb != null) {
+			data.putInt("severing_limb", limbs.getParts().indexOf(severingLimb));
+		}
+		data.putBoolean("severing_hand", severingHand != null);
+		if (severingHand != null) {
+			data.putBoolean("severing_hand_main", severingHand == InteractionHand.MAIN_HAND);
+		}
+		data.putInt("severing_ticks_remaining", severingTicksRemaining);
+		data.putInt("damage_ticks_elapsed", damageTicksElapsed);
+		data.putInt("ticks_to_bleed", ticksToBleed);
+		data.putBoolean("slim", slim);
+		System.out.println("put data");
 	}
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	private void mannequin$readSaveData(ValueInput valueInput, CallbackInfo ci) {
-		/*severedLimbs = valueInput.read("mannequin$severed_limbs", SeveredLimb.LIST_CODEC).orElse(null);
-		if (severedLimbs != null) {
-			severedLimbs = new ArrayList<>(severedLimbs);
-		}*/
+		if (!(((LivingEntity) (Object) this) instanceof Player)) {
+			return;
+		}
+		valueInput.child("mannequin$mannequin_entity").ifPresent(data -> {
+			data.read("limbs", MannequinLimbs.CODEC).ifPresent(limbs -> this.limbs = limbs);
+			//severing = data.getBooleanOr("severing", false);
+			doll = data.getBooleanOr("doll", false);
+			/*data.getInt("severing_limb").ifPresent(index -> severingLimb = limbs.getParts().get(index));
+			if (data.getBooleanOr("severing_hand", false)) {
+				severingHand = data.getBooleanOr("severing_hand_main", false) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+			}
+			severingTicksRemaining = data.getIntOr("severing_ticks_remaining", 0);*/
+			damageTicksElapsed = data.getIntOr("damage_ticks_elapsed", 0);
+			ticksToBleed = data.getIntOr("ticks_to_bleed", 0);
+			slim = data.getBooleanOr("slim", false);
+		});
+
 	}
 }

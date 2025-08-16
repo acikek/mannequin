@@ -10,13 +10,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Optional;
+
 @Mixin(Player.class)
 public class PlayerMixin {
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void mannequin$createLimbs(Level level, GameProfile gameProfile, CallbackInfo ci) {
 		if (((Player) (Object) this) instanceof MannequinEntity mannequinEntity) {
-			mannequinEntity.mannequin$getLimbs().setProfile(new ResolvableProfile(gameProfile));
+			mannequinEntity.mannequin$getLimbs().setProfile(Optional.of(new ResolvableProfile(gameProfile)));
 		}
 	}
 }

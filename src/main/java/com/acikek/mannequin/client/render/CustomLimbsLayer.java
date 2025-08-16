@@ -40,7 +40,9 @@ public class CustomLimbsLayer extends RenderLayer<PlayerRenderState, PlayerModel
 			if (limb.severed) {
 				continue;
 			}
-			var skin = limb.profile.isResolved() ? Minecraft.getInstance().getSkinManager().getInsecureSkin(limb.profile.gameProfile(), null) : DefaultPlayerSkin.getDefaultSkin();
+			var skin = limb.profile.isPresent() && limb.profile.get().isResolved()
+				? Minecraft.getInstance().getSkinManager().getInsecureSkin(limb.profile.get().gameProfile(), null)
+				: DefaultPlayerSkin.getDefaultSkin();
 			if (skin == null) {
 				continue;
 			}

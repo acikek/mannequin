@@ -2,10 +2,9 @@ package com.acikek.mannequin.network;
 
 import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.client.MannequinClient;
-import com.acikek.mannequin.util.LimbOrientation;
-import com.acikek.mannequin.util.LimbType;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinLimb;
+import com.acikek.mannequin.util.MannequinLimbs;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -20,8 +19,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -70,17 +67,14 @@ public class MannequinNetworking {
 		}
 	}
 
-	public record UpdateLimb(int entityId, boolean mainHand, LimbType limbType, LimbOrientation limbOrientation, boolean severed, Optional<ResolvableProfile> profile) implements CustomPacketPayload {
+	public record UpdateLimb(int entityId, boolean mainHand, MannequinLimb limb) implements CustomPacketPayload {
 
 		public static final Type<UpdateLimb> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_limb"));
 
 		public static final StreamCodec<FriendlyByteBuf, UpdateLimb> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.INT, UpdateLimb::entityId,
 			ByteBufCodecs.BOOL, UpdateLimb::mainHand,
-			LimbType.STREAM_CODEC, UpdateLimb::limbType,
-			LimbOrientation.STREAM_CODEC, UpdateLimb::limbOrientation,
-			ByteBufCodecs.BOOL, UpdateLimb::severed,
-			ByteBufCodecs.optional(ResolvableProfile.STREAM_CODEC), UpdateLimb::profile,
+			MannequinLimb.STREAM_CODEC, UpdateLimb::limb,
 			UpdateLimb::new
 		);
 
@@ -89,6 +83,8 @@ public class MannequinNetworking {
 			return TYPE;
 		}
 	}
+
+	//public record UpdateLimbs(OptionalInt entityId, MannequinLimbs)
 
 	public static void register() {
 		PayloadTypeRegistry.playC2S().register(StartSevering.TYPE, StartSevering.STREAM_CODEC);
@@ -114,7 +110,7 @@ public class MannequinNetworking {
 				}
 			}
 			else if (result.severedLimb() != null) {
-				var watcherPayload = new UpdateLimb(context.player().getId(), payload.mainHand(), result.severedLimb().type, result.severedLimb().orientation, true, Optional.empty());
+				var watcherPayload = new UpdateLimb(context.player().getId(), payload.mainHand(), result.severedLimb());
 				for (var watcher : PlayerLookup.tracking(context.player())) {
 					ServerPlayNetworking.send(watcher, watcherPayload);
 				}
@@ -157,17 +153,15 @@ public class MannequinNetworking {
 		ClientPlayNetworking.registerGlobalReceiver(UpdateLimb.TYPE, (payload, context) -> {
 			var entity = context.player().level().getEntity(payload.entityId());
 			if (entity instanceof MannequinEntity mannequinEntity) {
-				var limb = mannequinEntity.mannequin$getLimbs().resolve(payload.limbType(), payload.limbOrientation());
-				if (payload.severed()) {
+				var limb = mannequinEntity.mannequin$getLimbs().resolve(payload.limb().type, payload.limb().orientation);
+				if (payload.limb().severed) {
 					var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 					mannequinEntity.mannequin$sever(limb, hand);
 					if (entity instanceof LocalPlayer player) {
 						player.swing(hand);
 					}
 				}
-				else if (payload.profile().isPresent()) {
-					mannequinEntity.mannequin$attach(limb, payload.profile().get());
-				}
+				else payload.limb().profile.ifPresent(profile -> mannequinEntity.mannequin$attach(limb, profile));
 			}
 		});
 	}
