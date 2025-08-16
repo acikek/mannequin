@@ -21,7 +21,7 @@ public class SeveringSoundInstance extends AbstractTickableSoundInstance {
 
 	@Override
 	public void tick() {
-		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$isSevering()) {
+		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getData().severing) {
 			stop();
 			return;
 		}

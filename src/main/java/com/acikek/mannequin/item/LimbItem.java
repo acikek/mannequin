@@ -39,12 +39,12 @@ public class LimbItem extends Item {
 
 	@Override
 	public @NotNull InteractionResult use(Level level, Player player, InteractionHand interactionHand) {
-		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$isDoll()) {
+		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getData().doll) {
 			return super.use(level, player, interactionHand);
 		}
 		var stack = player.getItemInHand(interactionHand);
 		var orientation = stack.getOrDefault(LimbOrientation.DATA_COMPONENT_TYPE, LimbOrientation.NONE);
-		var limbToAttach = mannequinEntity.mannequin$getLimbs().resolve(limbType, orientation);
+		var limbToAttach = mannequinEntity.mannequin$getData().limbs.resolve(limbType, orientation);
 		if (limbToAttach == null || !limbToAttach.severed) {
 			return super.use(level, player, interactionHand);
 		}

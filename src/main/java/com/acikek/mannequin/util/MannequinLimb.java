@@ -59,7 +59,7 @@ public class MannequinLimb {
 		stack.set(LimbOrientation.DATA_COMPONENT_TYPE, orientation);
 		stack.set(DataComponents.PROFILE, profile.orElseGet(() -> new ResolvableProfile(player.getGameProfile())));
 		if (player instanceof MannequinEntity mannequinEntity) {
-			stack.set(LimbItem.SLIM_COMPONENT_TYPE, mannequinEntity.mannequin$isSlim());
+			stack.set(LimbItem.SLIM_COMPONENT_TYPE, mannequinEntity.mannequin$getData().slim);
 		}
 		return stack;
 	}

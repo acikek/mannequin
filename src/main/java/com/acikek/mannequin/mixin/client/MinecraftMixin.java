@@ -55,10 +55,10 @@ public class MinecraftMixin {
 		if (!(player instanceof MannequinEntity mannequinEntity)) {
 			return;
 		}
-		if (options.keyAttack.isDown() && options.keyUse.isDown() && !mannequinEntity.mannequin$isSevering()) {
+		if (options.keyAttack.isDown() && options.keyUse.isDown() && !mannequinEntity.mannequin$getData().severing) {
 			mannequin$querySevering(player);
 		}
-		if ((!options.keyAttack.isDown() || !options.keyUse.isDown()) && mannequinEntity.mannequin$isSevering()) {
+		if ((!options.keyAttack.isDown() || !options.keyUse.isDown()) && mannequinEntity.mannequin$getData().severing) {
 			mannequinEntity.mannequin$stopSevering();
 			ClientPlayNetworking.send(new MannequinNetworking.StopSevering(OptionalInt.empty()));
 		}
@@ -66,7 +66,7 @@ public class MinecraftMixin {
 
 	@Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
 	private void mannequin$cancelStartAttack(CallbackInfoReturnable<Boolean> cir) {
-		if (player instanceof MannequinEntity mannequinEntity && (mannequinEntity.mannequin$isSevering() || limbToSever != null || severingHand != null)) {
+		if (player instanceof MannequinEntity mannequinEntity && (mannequinEntity.mannequin$getData().severing || limbToSever != null || severingHand != null)) {
 			cir.setReturnValue(false);
 		}
 	}
@@ -75,8 +75,8 @@ public class MinecraftMixin {
 	private void mannequin$tryStartSevering(CallbackInfo ci) {
 		if (player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
 			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-			mannequinEntity.mannequin$setSlim(slim);
-			if (mannequinEntity.mannequin$isDoll()) {
+			mannequinEntity.mannequin$getData().slim = slim;
+			if (mannequinEntity.mannequin$getData().doll) {
 				mannequinEntity.mannequin$sever(limbToSever, severingHand);
 				player.swing(severingHand);
 			}
@@ -90,7 +90,7 @@ public class MinecraftMixin {
 
 	@Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
 	private void mannequin$cancelContinueAttack(boolean bl, CallbackInfo ci) {
-		if (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$isSevering()) {
+		if (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getData().severing) {
 			ci.cancel();
 		}
 	}
@@ -103,7 +103,7 @@ public class MinecraftMixin {
 
 	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z", ordinal = 1))
 	private boolean mannequin$cancelSwap(boolean original) {
-		return original || (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm().getOpposite()).severed);
+		return original || (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getData().limbs.getArm(player.getMainArm().getOpposite()).severed);
 	}
 
 	@Unique
@@ -119,7 +119,7 @@ public class MinecraftMixin {
 			if (level == null || !stack.isItemEnabled(level.enabledFeatures())) {
 				continue;
 			}
-			var limbCandidate = mannequinEntity.mannequin$getLimbs().resolve(player, stack, hand);
+			var limbCandidate = mannequinEntity.mannequin$getData().limbs.resolve(player, stack, hand);
 			if (limbCandidate != null && !limbCandidate.severed) {
 				limbToSever = limbCandidate;
 				severingHand = hand;

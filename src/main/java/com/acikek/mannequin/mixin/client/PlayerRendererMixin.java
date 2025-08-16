@@ -31,7 +31,7 @@ public class PlayerRendererMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V", at = @At("TAIL"))
 	private void mannequin$extractMannequinRenderState(AbstractClientPlayer abstractClientPlayer, PlayerRenderState playerRenderState, float f, CallbackInfo ci) {
 		if (abstractClientPlayer instanceof MannequinEntity mannequinEntity && playerRenderState instanceof MannequinRenderState mannequinRenderState) {
-			mannequinRenderState.mannequin$setLimbs(mannequinEntity.mannequin$getLimbs());
+			mannequinRenderState.mannequin$setLimbs(mannequinEntity.mannequin$getData().limbs);
 			mannequinRenderState.mannequin$setProfile(abstractClientPlayer.getGameProfile());
 		}
 	}

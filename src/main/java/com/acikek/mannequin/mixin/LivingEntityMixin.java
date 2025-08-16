@@ -2,6 +2,7 @@ package com.acikek.mannequin.mixin;
 
 import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.sound.MannequinSounds;
+import com.acikek.mannequin.util.MannequinEntityData;
 import com.acikek.mannequin.util.MannequinLimb;
 import com.acikek.mannequin.util.MannequinLimbs;
 import com.acikek.mannequin.util.MannequinEntity;
@@ -66,41 +67,14 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	public abstract void setItemInHand(InteractionHand interactionHand, ItemStack itemStack);
 
 	@Unique
-	private MannequinLimbs limbs = new MannequinLimbs();
-
-	@Unique
-	private boolean severing;
-
-	@Unique
-	private boolean doll;
-
-	@Unique
-	private @Nullable MannequinLimb severingLimb;
-
-	@Unique
-	private @Nullable InteractionHand severingHand;
-
-	@Unique
-	private int severingTicksRemaining;
-
-	@Unique
-	private int damageTicksElapsed;
-
-	@Unique
-	private int ticksToBleed;
-
-	@Unique
-	private int totalBleedingTicks;
-
-	@Unique
-	private boolean slim;
+	private MannequinEntityData data = new MannequinEntityData();
 
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void mannequin$tick(CallbackInfo ci) {
 		mannequin$tickDamage();
-		if (severing) {
-			severingTicksRemaining--;
-			if (severingTicksRemaining <= 0) {
+		if (data.severing) {
+			data.severingTicksRemaining--;
+			if (data.severingTicksRemaining <= 0) {
 				mannequin$sever();
 			}
 		}
@@ -108,47 +82,45 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Unique
 	private void mannequin$tickDamage() {
-		if (doll || (!severing && ticksToBleed == 0)) {
+		if (data.doll || (!data.severing && data.ticksToBleed == 0)) {
 			return;
 		}
-		if (!severing && (ticksToBleed > 0 && damageTicksElapsed >= ticksToBleed)) {
-			damageTicksElapsed = 0;
-			ticksToBleed = 0;
+		if (!data.severing && (data.ticksToBleed > 0 && data.damageTicksElapsed >= data.ticksToBleed)) {
+			data.damageTicksElapsed = 0;
+			data.ticksToBleed = 0;
 			return;
 		}
-		damageTicksElapsed++;
-		if (ticksToBleed > 0) {
-			totalBleedingTicks++;
-			System.out.println(totalBleedingTicks);
-			if (totalBleedingTicks >= 20) {
+		data.damageTicksElapsed++;
+		if (data.ticksToBleed > 0) {
+			data.totalBleedingTicks++;
+			if (data.totalBleedingTicks >= 600) {
 				mannequin$makeDoll();
-				System.out.println("doll");
 				return;
 			}
 		}
-		if ((severing || !hasEffect(MobEffects.SLOW_FALLING)) && damageTicksElapsed % (severing ? 10 : 20) == 0 && ((LivingEntity) (Object) this).level() instanceof ServerLevel serverLevel) {
+		if ((data.severing || !hasEffect(MobEffects.SLOW_FALLING)) && data.damageTicksElapsed % (data.severing ? 10 : 20) == 0 && ((LivingEntity) (Object) this).level() instanceof ServerLevel serverLevel) {
 			var damageSource = ((LivingEntity) (Object) this).level().damageSources().source(Mannequin.BLEEDING_DAMAGE_TYPE);
 			var velocity = ((LivingEntity) (Object) this).getDeltaMovement();
-			((LivingEntity) (Object) this).hurtServer(serverLevel, damageSource, severing ? 2.0F : 1.0F);
+			((LivingEntity) (Object) this).hurtServer(serverLevel, damageSource, data.severing ? 2.0F : 1.0F);
 			((LivingEntity) (Object) this).setDeltaMovement(velocity.multiply(0.3, 0.3, 0.3));
 		}
 	}
 
 	@Unique
 	private void mannequin$sever() {
-		if (severingLimb == null || severingHand == null) {
+		if (data.severingLimb == null || data.severingHand == null) {
 			return;
 		}
-		ticksToBleed = damageTicksElapsed * 2;
-		mannequin$sever(severingLimb, severingHand);
+		data.ticksToBleed = data.damageTicksElapsed * 2;
+		mannequin$sever(data.severingLimb, data.severingHand);
 	}
 
 	@Unique
 	private void mannequin$makeDoll() {
-		damageTicksElapsed = 0;
-		totalBleedingTicks = 0;
-		ticksToBleed = 0;
-		doll = true;
+		data.damageTicksElapsed = 0;
+		data.totalBleedingTicks = 0;
+		data.ticksToBleed = 0;
+		data.doll = true;
 		makeSound(SoundEvents.WITHER_SKELETON_AMBIENT);
 	}
 
@@ -159,7 +131,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@ModifyReturnValue(method = "getDimensions", at = @At("RETURN"))
 	private EntityDimensions mannequin$resize(EntityDimensions original) {
-		if (limbs.leftLeg().severed && limbs.rightLeg().severed) {
+		if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
 			return Mannequin.LEGLESS_DIMENSIONS;
 		}
 		return original;
@@ -168,7 +140,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Inject(method = "getItemInHand", at = @At("HEAD"), cancellable = true)
 	private void mannequin$getItemInHand(InteractionHand interactionHand, CallbackInfoReturnable<ItemStack> cir) {
 		var arm = interactionHand == InteractionHand.MAIN_HAND ? getMainArm() : getMainArm().getOpposite();
-		if (limbs.getArm(arm).severed) {
+		if (data.limbs.getArm(arm).severed) {
 			cir.setReturnValue(ItemStack.EMPTY);
 		}
 	}
@@ -189,76 +161,21 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Unique
 	private boolean mannequin$isSlotSevered(EquipmentSlot equipmentSlot) {
-		return (equipmentSlot == EquipmentSlot.MAINHAND && limbs.getArm(getMainArm()).severed)
-			|| (equipmentSlot == EquipmentSlot.OFFHAND && limbs.getArm(getMainArm().getOpposite()).severed);
+		return (equipmentSlot == EquipmentSlot.MAINHAND && data.limbs.getArm(getMainArm()).severed)
+			|| (equipmentSlot == EquipmentSlot.OFFHAND && data.limbs.getArm(getMainArm().getOpposite()).severed);
 	}
 
 	@Override
-	public MannequinLimbs mannequin$getLimbs() {
-		return limbs;
-	}
-
-	@Override
-	public boolean mannequin$isSevering() {
-		return severing;
-	}
-
-	@Override
-	public void mannequin$setSevering(boolean severing) {
-		this.severing = severing;
-	}
-
-	@Override
-	public boolean mannequin$isDoll() {
-		return doll;
-	}
-
-	@Override
-	public MannequinLimb mannequin$getSeveringLimb() {
-		return severingLimb;
-	}
-
-	@Override
-	public void mannequin$setSeveringLimb(MannequinLimb limb) {
-		severingLimb = limb;
-	}
-
-	@Override
-	public @Nullable InteractionHand mannequin$getSeveringHand() {
-		return severingHand;
-	}
-
-	@Override
-	public void mannequin$setSeveringHand(InteractionHand hand) {
-		severingHand = hand;
-	}
-
-	@Override
-	public int mannequin$getSeveringTicksRemaining() {
-		return severingTicksRemaining;
-	}
-
-	@Override
-	public void mannequin$setSeveringTicksRemaining(int ticks) {
-		severingTicksRemaining = ticks;
-	}
-
-	@Override
-	public boolean mannequin$isSlim() {
-		return slim;
-	}
-
-	@Override
-	public void mannequin$setSlim(boolean slim) {
-		this.slim = slim;
+	public MannequinEntityData mannequin$getData() {
+		return data;
 	}
 
 	@Override
 	public void mannequin$startSevering(MannequinLimb limbToSever, InteractionHand hand, int ticks) {
-		severing = true;
-		severingLimb = limbToSever;
-		severingHand = hand;
-		severingTicksRemaining = ticks;
+		data.severing = true;
+		data.severingLimb = limbToSever;
+		data.severingHand = hand;
+		data.severingTicksRemaining = ticks;
 		var attribute = getAttribute(Attributes.MOVEMENT_SPEED);
 		if (attribute != null && !attribute.hasModifier(Mannequin.SEVERING_SLOWNESS.id())) {
 			attribute.addTransientModifier(Mannequin.SEVERING_SLOWNESS);
@@ -267,11 +184,11 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Override
 	public void mannequin$stopSevering() {
-		severing = false;
-		severingLimb = null;
-		severingHand = null;
-		severingTicksRemaining = 0;
-		damageTicksElapsed = 0;
+		data.severing = false;
+		data.severingLimb = null;
+		data.severingHand = null;
+		data.severingTicksRemaining = 0;
+		data.damageTicksElapsed = 0;
 		var attribute = getAttribute(Attributes.MOVEMENT_SPEED);
 		if (attribute != null) {
 			attribute.removeModifier(Mannequin.SEVERING_SLOWNESS);
@@ -325,7 +242,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		if (!(((LivingEntity) (Object) this) instanceof Player)) {
 			return;
 		}
-		var data = valueOutput.child("mannequin$mannequin_entity");
+		/*var data = valueOutput.child("mannequin$mannequin_entity");
 		data.store("limbs", MannequinLimbs.CODEC, limbs);
 		data.putBoolean("severing", severing);
 		data.putBoolean("doll", doll);
@@ -340,7 +257,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		data.putInt("damage_ticks_elapsed", damageTicksElapsed);
 		data.putInt("ticks_to_bleed", ticksToBleed);
 		data.putBoolean("slim", slim);
-		System.out.println("put data");
+		System.out.println("put data");*/
 	}
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -348,7 +265,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		if (!(((LivingEntity) (Object) this) instanceof Player)) {
 			return;
 		}
-		valueInput.child("mannequin$mannequin_entity").ifPresent(data -> {
+		/*valueInput.child("mannequin$mannequin_entity").ifPresent(data -> {
 			data.read("limbs", MannequinLimbs.CODEC).ifPresent(limbs -> this.limbs = limbs);
 			//severing = data.getBooleanOr("severing", false);
 			doll = data.getBooleanOr("doll", false);
@@ -356,11 +273,10 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			if (data.getBooleanOr("severing_hand", false)) {
 				severingHand = data.getBooleanOr("severing_hand_main", false) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 			}
-			severingTicksRemaining = data.getIntOr("severing_ticks_remaining", 0);*/
+			severingTicksRemaining = data.getIntOr("severing_ticks_remaining", 0);
 			damageTicksElapsed = data.getIntOr("damage_ticks_elapsed", 0);
 			ticksToBleed = data.getIntOr("ticks_to_bleed", 0);
 			slim = data.getBooleanOr("slim", false);
-		});
-
+		});*/
 	}
 }

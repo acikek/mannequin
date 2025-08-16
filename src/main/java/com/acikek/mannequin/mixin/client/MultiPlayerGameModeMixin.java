@@ -46,6 +46,6 @@ public class MultiPlayerGameModeMixin {
 
 	@Unique
 	private boolean mannequin$isMainArmSevered() {
-		return minecraft.player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getLimbs().getArm(minecraft.player.getMainArm()).severed;
+		return minecraft.player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getData().limbs.getArm(minecraft.player.getMainArm()).severed;
 	}
 }

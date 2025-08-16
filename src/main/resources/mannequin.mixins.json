@@ -17,10 +17,8 @@
 	"client": [
 		"client.ItemInHandRendererMixin",
 		"client.LivingEntityRendererAccessor",
-		"client.LocalPlayerMixin",
 		"client.MinecraftMixin",
 		"client.MultiPlayerGameModeMixin",
-		"client.PlayerHeadSpecialRendererAccess",
 		"client.PlayerModelMixin",
 		"client.PlayerRendererMixin",
 		"client.PlayerRenderStateMixin"

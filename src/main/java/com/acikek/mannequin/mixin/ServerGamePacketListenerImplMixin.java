@@ -18,7 +18,7 @@ public class ServerGamePacketListenerImplMixin {
 
 	@ModifyExpressionValue(method = "handlePlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;isSpectator()Z", ordinal = 0))
 	private boolean mannequin$cancelSwap(boolean original) {
-		return original || (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm().getOpposite()).severed);
+		return original || (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getData().limbs.getArm(player.getMainArm().getOpposite()).severed);
 	}
 
 	@ModifyExpressionValue(method = "handlePlayerAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;", ordinal = 0))

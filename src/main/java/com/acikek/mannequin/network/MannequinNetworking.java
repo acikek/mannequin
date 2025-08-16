@@ -141,7 +141,7 @@ public class MannequinNetworking {
 		});
 		ClientPlayNetworking.registerGlobalReceiver(UpdateSeveringTicksRemaining.TYPE, (payload, context) -> {
 			if (context.player() instanceof MannequinEntity mannequinEntity) {
-				mannequinEntity.mannequin$setSeveringTicksRemaining(payload.ticksRemaining());
+				mannequinEntity.mannequin$getData().severingTicksRemaining = payload.ticksRemaining();
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(StopSevering.TYPE, (payload, context) -> {
@@ -153,7 +153,7 @@ public class MannequinNetworking {
 		ClientPlayNetworking.registerGlobalReceiver(UpdateLimb.TYPE, (payload, context) -> {
 			var entity = context.player().level().getEntity(payload.entityId());
 			if (entity instanceof MannequinEntity mannequinEntity) {
-				var limb = mannequinEntity.mannequin$getLimbs().resolve(payload.limb().type, payload.limb().orientation);
+				var limb = mannequinEntity.mannequin$getData().limbs.resolve(payload.limb().type, payload.limb().orientation);
 				if (payload.limb().severed) {
 					var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 					mannequinEntity.mannequin$sever(limb, hand);
@@ -174,21 +174,21 @@ public class MannequinNetworking {
 	}
 
 	public static StartSeveringResult tryStartSevering(StartSevering payload, Player player, MannequinEntity mannequinEntity) {
-		if (mannequinEntity.mannequin$isSevering()) {
+		if (mannequinEntity.mannequin$getData().severing) {
 			return StartSeveringResult.empty();
 		}
 		var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 		var stack = player.getItemInHand(hand);
-		var limbToSever = mannequinEntity.mannequin$getLimbs().resolve(player, stack, hand);
+		var limbToSever = mannequinEntity.mannequin$getData().limbs.resolve(player, stack, hand);
 		if (limbToSever != null && !limbToSever.severed) {
-			if (mannequinEntity.mannequin$isDoll()) {
+			if (mannequinEntity.mannequin$getData().doll) {
 				mannequinEntity.mannequin$sever(limbToSever, hand);
 				return new StartSeveringResult(false, 0, limbToSever);
 			}
 			int severingTicks = limbToSever.getSeveringTicks(stack);
 			if (severingTicks >= 0) {
 				mannequinEntity.mannequin$startSevering(limbToSever, hand, severingTicks);
-				mannequinEntity.mannequin$setSlim(payload.slim());
+				mannequinEntity.mannequin$getData().slim = payload.slim();
 			}
 			return new StartSeveringResult(true, severingTicks, null);
 		}

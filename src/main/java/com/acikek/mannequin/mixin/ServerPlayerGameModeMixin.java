@@ -18,6 +18,6 @@ public class ServerPlayerGameModeMixin {
 
 	@ModifyExpressionValue(method = "handleBlockBreakAction", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/ServerLevel;mayInteract(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/core/BlockPos;)Z"))
 	private boolean mannequin$cancelDestroyBlock(boolean original) {
-		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm()).severed);
+		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getData().limbs.getArm(player.getMainArm()).severed);
 	}
 }

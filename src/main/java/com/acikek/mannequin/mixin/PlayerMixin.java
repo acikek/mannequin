@@ -18,7 +18,7 @@ public class PlayerMixin {
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void mannequin$createLimbs(Level level, GameProfile gameProfile, CallbackInfo ci) {
 		if (((Player) (Object) this) instanceof MannequinEntity mannequinEntity) {
-			mannequinEntity.mannequin$getLimbs().setProfile(Optional.of(new ResolvableProfile(gameProfile)));
+			mannequinEntity.mannequin$getData().limbs.setProfile(Optional.of(new ResolvableProfile(gameProfile)));
 		}
 	}
 }

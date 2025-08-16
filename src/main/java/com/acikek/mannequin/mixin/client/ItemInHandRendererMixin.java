@@ -36,10 +36,10 @@ public class ItemInHandRendererMixin {
 
 	@Inject(method = "applyItemArmTransform", at = @At("TAIL"))
 	private void mannequin$applySeveringAnimation(PoseStack poseStack, HumanoidArm humanoidArm, float f, CallbackInfo ci) {
-		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$isSevering()) {
+		if (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getData().severing) {
 			return;
 		}
-		var arm = mannequinEntity.mannequin$getSeveringHand() == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
+		var arm = mannequinEntity.mannequin$getData().severingHand == InteractionHand.MAIN_HAND ? player.getMainArm() : player.getMainArm().getOpposite();
 		if (arm != humanoidArm) {
 			return;
 		}
@@ -48,7 +48,7 @@ public class ItemInHandRendererMixin {
 		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
 		poseStack.mulPose(Axis.YP.rotationDegrees(right * 13.365F));
 		poseStack.mulPose(Axis.ZP.rotationDegrees(right * 78.05F));
-		float h = mannequinEntity.mannequin$getSeveringTicksRemaining() % 10;
+		float h = mannequinEntity.mannequin$getData().severingTicksRemaining % 10;
 		float i = h - deltaTime + 1.0F;
 		float j = 1.0F - i / 10.0F;
 		float motion = 0.1F * Mth.cos(j * 2.0F * (float) Math.PI);
@@ -57,11 +57,11 @@ public class ItemInHandRendererMixin {
 
 	@ModifyExpressionValue(method = "renderHandsWithItems", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer$HandRenderSelection;renderMainHand:Z"))
 	private boolean mannequin$cancelMainHand(boolean original) {
-		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm()).severed);
+		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getData().limbs.getArm(player.getMainArm()).severed);
 	}
 
 	@ModifyExpressionValue(method = "renderHandsWithItems", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer$HandRenderSelection;renderOffHand:Z"))
 	private boolean mannequin$cancelOffHand(boolean original) {
-		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm().getOpposite()).severed);
+		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getData().limbs.getArm(player.getMainArm().getOpposite()).severed);
 	}
 }
