@@ -3,8 +3,8 @@ package com.acikek.mannequin.network;
 import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.util.MannequinEntity;
+import com.acikek.mannequin.util.MannequinEntityData;
 import com.acikek.mannequin.util.MannequinLimb;
-import com.acikek.mannequin.util.MannequinLimbs;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -21,7 +21,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 
 public class MannequinNetworking {
@@ -84,7 +83,21 @@ public class MannequinNetworking {
 		}
 	}
 
-	//public record UpdateLimbs(OptionalInt entityId, MannequinLimbs)
+	public record UpdateMannequinEntityData(OptionalInt entityId, MannequinEntityData data) implements CustomPacketPayload {
+
+		public static final Type<UpdateMannequinEntityData> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_mannequin_entity_data"));
+
+		public static final StreamCodec<FriendlyByteBuf, UpdateMannequinEntityData> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.OPTIONAL_VAR_INT, UpdateMannequinEntityData::entityId,
+			MannequinEntityData.STREAM_CODEC, UpdateMannequinEntityData::data,
+			UpdateMannequinEntityData::new
+		);
+
+		@Override
+		public @NotNull Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
 
 	public static void register() {
 		PayloadTypeRegistry.playC2S().register(StartSevering.TYPE, StartSevering.STREAM_CODEC);
@@ -93,6 +106,7 @@ public class MannequinNetworking {
 		PayloadTypeRegistry.playC2S().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateLimb.TYPE, UpdateLimb.STREAM_CODEC);
+		PayloadTypeRegistry.playS2C().register(UpdateMannequinEntityData.TYPE, UpdateMannequinEntityData.STREAM_CODEC);
 		registerServer();
 	}
 
@@ -162,6 +176,12 @@ public class MannequinNetworking {
 					}
 				}
 				else payload.limb().profile.ifPresent(profile -> mannequinEntity.mannequin$attach(limb, profile));
+			}
+		});
+		ClientPlayNetworking.registerGlobalReceiver(UpdateMannequinEntityData.TYPE, (payload, context) -> {
+			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
+			if (entity instanceof MannequinEntity mannequinEntity) {
+				mannequinEntity.mannequin$setData(payload.data());
 			}
 		});
 	}

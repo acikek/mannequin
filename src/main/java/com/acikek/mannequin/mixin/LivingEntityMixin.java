@@ -1,14 +1,17 @@
 package com.acikek.mannequin.mixin;
 
 import com.acikek.mannequin.Mannequin;
+import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.sound.MannequinSounds;
 import com.acikek.mannequin.util.MannequinEntityData;
 import com.acikek.mannequin.util.MannequinLimb;
-import com.acikek.mannequin.util.MannequinLimbs;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
@@ -35,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin implements MannequinEntity {
@@ -69,8 +73,12 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Unique
 	private MannequinEntityData data = new MannequinEntityData();
 
+	@Unique
+	private boolean dirty;
+
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void mannequin$tick(CallbackInfo ci) {
+		mannequin$tickData();
 		mannequin$tickDamage();
 		if (data.severing) {
 			data.severingTicksRemaining--;
@@ -78,6 +86,18 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 				mannequin$sever();
 			}
 		}
+	}
+
+	private void mannequin$tickData() {
+		if (!dirty || !(((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer)) {
+			return;
+		}
+		ServerPlayNetworking.send(serverPlayer, new MannequinNetworking.UpdateMannequinEntityData(OptionalInt.empty(), data));
+		var watcherPayload = new MannequinNetworking.UpdateMannequinEntityData(OptionalInt.of(serverPlayer.getId()), data);
+		for (var watcher : PlayerLookup.tracking(serverPlayer)) {
+			ServerPlayNetworking.send(watcher, watcherPayload);
+		}
+		dirty = false;
 	}
 
 	@Unique
@@ -171,6 +191,11 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	}
 
 	@Override
+	public void mannequin$setData(MannequinEntityData data) {
+		this.data = data;
+	}
+
+	@Override
 	public void mannequin$startSevering(MannequinLimb limbToSever, InteractionHand hand, int ticks) {
 		data.severing = true;
 		data.severingLimb = limbToSever;
@@ -239,44 +264,18 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
 	private void mannequin$addSaveData(ValueOutput valueOutput, CallbackInfo ci) {
-		if (!(((LivingEntity) (Object) this) instanceof Player)) {
-			return;
+		if (((LivingEntity) (Object) this) instanceof Player) {
+			valueOutput.store("mannequin$entity_data", MannequinEntityData.CODEC, data);
 		}
-		/*var data = valueOutput.child("mannequin$mannequin_entity");
-		data.store("limbs", MannequinLimbs.CODEC, limbs);
-		data.putBoolean("severing", severing);
-		data.putBoolean("doll", doll);
-		if (severingLimb != null) {
-			data.putInt("severing_limb", limbs.getParts().indexOf(severingLimb));
-		}
-		data.putBoolean("severing_hand", severingHand != null);
-		if (severingHand != null) {
-			data.putBoolean("severing_hand_main", severingHand == InteractionHand.MAIN_HAND);
-		}
-		data.putInt("severing_ticks_remaining", severingTicksRemaining);
-		data.putInt("damage_ticks_elapsed", damageTicksElapsed);
-		data.putInt("ticks_to_bleed", ticksToBleed);
-		data.putBoolean("slim", slim);
-		System.out.println("put data");*/
 	}
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	private void mannequin$readSaveData(ValueInput valueInput, CallbackInfo ci) {
-		if (!(((LivingEntity) (Object) this) instanceof Player)) {
-			return;
+		if (((LivingEntity) (Object) this) instanceof Player) {
+			valueInput.read("mannequin$entity_data", MannequinEntityData.CODEC).ifPresent(data -> {
+				this.data = data;
+				dirty = true;
+			});
 		}
-		/*valueInput.child("mannequin$mannequin_entity").ifPresent(data -> {
-			data.read("limbs", MannequinLimbs.CODEC).ifPresent(limbs -> this.limbs = limbs);
-			//severing = data.getBooleanOr("severing", false);
-			doll = data.getBooleanOr("doll", false);
-			/*data.getInt("severing_limb").ifPresent(index -> severingLimb = limbs.getParts().get(index));
-			if (data.getBooleanOr("severing_hand", false)) {
-				severingHand = data.getBooleanOr("severing_hand_main", false) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-			}
-			severingTicksRemaining = data.getIntOr("severing_ticks_remaining", 0);
-			damageTicksElapsed = data.getIntOr("damage_ticks_elapsed", 0);
-			ticksToBleed = data.getIntOr("ticks_to_bleed", 0);
-			slim = data.getBooleanOr("slim", false);
-		});*/
 	}
 }

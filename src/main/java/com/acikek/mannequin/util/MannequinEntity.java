@@ -10,6 +10,8 @@ public interface MannequinEntity {
 
 	MannequinEntityData mannequin$getData();
 
+	void mannequin$setData(MannequinEntityData data);
+
 	void mannequin$startSevering(MannequinLimb limbToSever, InteractionHand hand, int ticks);
 
 	void mannequin$stopSevering();
