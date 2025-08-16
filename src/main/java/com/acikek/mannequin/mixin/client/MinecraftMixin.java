@@ -4,6 +4,7 @@ import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinLimb;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -12,7 +13,6 @@ import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -99,6 +99,11 @@ public class MinecraftMixin {
 	private void mannequin$clearQueryData(CallbackInfo ci) {
 		limbToSever = null;
 		severingHand = null;
+	}
+
+	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z", ordinal = 1))
+	private boolean mannequin$cancelSwap(boolean original) {
+		return original || (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm().getOpposite()).severed);
 	}
 
 	@Unique

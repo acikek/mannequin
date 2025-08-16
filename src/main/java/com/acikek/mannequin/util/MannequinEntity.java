@@ -1,6 +1,8 @@
 package com.acikek.mannequin.util;
 
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,4 +39,8 @@ public interface MannequinEntity {
 	void mannequin$sever(MannequinLimb limb, InteractionHand hand);
 
 	void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile);
+
+	ItemStack mannequin$getItemBySlot(EquipmentSlot slot);
+
+	ItemStack mannequin$getItemInHand(InteractionHand hand);
 }

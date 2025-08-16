@@ -1,9 +1,11 @@
 package com.acikek.mannequin.mixin.client;
 
 import com.acikek.mannequin.util.MannequinEntity;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
@@ -26,9 +28,9 @@ public class ItemInHandRendererMixin {
 	@Unique
 	private float deltaTime;
 
-	@Inject(method = "renderArmWithItem", at = @At("HEAD"))
-	private void mannequin$capturePlayer(AbstractClientPlayer abstractClientPlayer, float f, float g, InteractionHand interactionHand, float h, ItemStack itemStack, float i, PoseStack poseStack, MultiBufferSource multiBufferSource, int j, CallbackInfo ci) {
-		player = abstractClientPlayer;
+	@Inject(method = "renderHandsWithItems", at = @At("HEAD"))
+	private void mannequin$capturePlayer(float f, PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, LocalPlayer localPlayer, int i, CallbackInfo ci) {
+		player = localPlayer;
 		deltaTime = f;
 	}
 
@@ -51,5 +53,15 @@ public class ItemInHandRendererMixin {
 		float j = 1.0F - i / 10.0F;
 		float motion = 0.1F * Mth.cos(j * 2.0F * (float) Math.PI);
 		poseStack.translate(0.0F, motion, 0.0F);
+	}
+
+	@ModifyExpressionValue(method = "renderHandsWithItems", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer$HandRenderSelection;renderMainHand:Z"))
+	private boolean mannequin$cancelMainHand(boolean original) {
+		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm()).severed);
+	}
+
+	@ModifyExpressionValue(method = "renderHandsWithItems", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/ItemInHandRenderer$HandRenderSelection;renderOffHand:Z"))
+	private boolean mannequin$cancelOffHand(boolean original) {
+		return original && (!(player instanceof MannequinEntity mannequinEntity) || !mannequinEntity.mannequin$getLimbs().getArm(player.getMainArm().getOpposite()).severed);
 	}
 }

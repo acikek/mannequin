@@ -1,24 +1,27 @@
 {
-  "required": true,
-  "package": "com.acikek.mannequin.mixin",
-  "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "LivingEntityMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "overwrites": {
-    "requireAnnotations": true
-  },
-  "client": [
-    "client.ItemInHandRendererMixin",
-    "client.LivingEntityRendererAccessor",
-    "client.LocalPlayerMixin",
-    "client.MinecraftMixin",
-    "client.PlayerHeadSpecialRendererAccess",
-    "client.PlayerModelMixin",
-    "client.PlayerRendererMixin",
-    "client.PlayerRenderStateMixin"
-  ]
+	"required": true,
+	"package": "com.acikek.mannequin.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"LivingEntityMixin",
+		"ServerGamePacketListenerImplMixin",
+		"ServerPlayerGameModeMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	},
+	"client": [
+		"client.ItemInHandRendererMixin",
+		"client.LivingEntityRendererAccessor",
+		"client.LocalPlayerMixin",
+		"client.MinecraftMixin",
+		"client.MultiPlayerGameModeMixin",
+		"client.PlayerHeadSpecialRendererAccess",
+		"client.PlayerModelMixin",
+		"client.PlayerRendererMixin",
+		"client.PlayerRenderStateMixin"
+	]
 }

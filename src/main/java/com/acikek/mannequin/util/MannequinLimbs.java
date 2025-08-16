@@ -55,4 +55,8 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 			case TORSO -> torso;
 		};
 	}
+
+	public MannequinLimb getArm(HumanoidArm arm) {
+		return arm == HumanoidArm.RIGHT ? rightArm : leftArm;
+	}
 }
