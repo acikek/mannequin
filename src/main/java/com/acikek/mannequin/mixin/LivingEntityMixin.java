@@ -3,9 +3,7 @@ package com.acikek.mannequin.mixin;
 import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.sound.MannequinSounds;
-import com.acikek.mannequin.util.MannequinEntityData;
-import com.acikek.mannequin.util.MannequinLimb;
-import com.acikek.mannequin.util.MannequinEntity;
+import com.acikek.mannequin.util.*;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -142,6 +140,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@ModifyReturnValue(method = "getDimensions", at = @At("RETURN"))
 	private EntityDimensions mannequin$resize(EntityDimensions original) {
+		if (data.limbs.torso().severed) {
+			return Mannequin.HEAD_ONLY_DIMENSIONS;
+		}
 		if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
 			return Mannequin.LEGLESS_DIMENSIONS;
 		}
@@ -172,6 +173,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Unique
 	private boolean mannequin$isSlotSevered(EquipmentSlot equipmentSlot) {
+		if (data.limbs.torso().severed) {
+			return equipmentSlot != EquipmentSlot.HEAD;
+		}
 		return ((equipmentSlot == EquipmentSlot.FEET || equipmentSlot == EquipmentSlot.LEGS) && data.limbs.leftLeg().severed && data.limbs.rightLeg().severed)
 			|| (equipmentSlot == EquipmentSlot.MAINHAND && data.limbs.getArm(getMainArm()).severed)
 			|| (equipmentSlot == EquipmentSlot.OFFHAND && data.limbs.getArm(getMainArm().getOpposite()).severed);
@@ -214,35 +218,57 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Override
 	public void mannequin$sever(MannequinLimb limb, InteractionHand hand) {
+		if (!(((LivingEntity) (Object) this) instanceof Player player)) {
+			return;
+		}
 		limb.severed = true;
-		if (((LivingEntity) (Object) this) instanceof Player player) {
-			var severedHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-			List<ItemStack> drop = new ArrayList<>();
+		var severedHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+		List<ItemStack> drop = new ArrayList<>();
+		if (limb.type == LimbType.ARM) {
 			drop.add(mannequin$getItemInHand(severedHand));
 			setItemInHand(severedHand, ItemStack.EMPTY);
-			if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
-				drop.add(mannequin$getItemBySlot(EquipmentSlot.FEET));
-				drop.add(mannequin$getItemBySlot(EquipmentSlot.LEGS));
-				setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
-				setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
+		}
+		if (limb.type == LimbType.LEG && data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
+			drop.add(mannequin$getItemBySlot(EquipmentSlot.FEET));
+			drop.add(mannequin$getItemBySlot(EquipmentSlot.LEGS));
+			setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
+			setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
+		}
+		else if (limb.type == LimbType.TORSO) {
+			if (!data.limbs.leftArm().severed) {
+				mannequin$severTorsoArm(player, data.limbs.leftArm(), drop);
 			}
-			for (var stack : drop) {
-				if (!stack.isEmpty()) {
-					var entity = createItemStackToDrop(stack, false, false);
-					if (entity != null) {
-						player.level().addFreshEntity(entity);
-					}
+			if (!data.limbs.rightArm().severed) {
+				mannequin$severTorsoArm(player, data.limbs.rightArm(), drop);
+			}
+			drop.add(mannequin$getItemBySlot(EquipmentSlot.CHEST));
+			setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+		}
+		for (var stack : drop) {
+			if (!stack.isEmpty()) {
+				var entity = createItemStackToDrop(stack, false, false);
+				if (entity != null) {
+					player.level().addFreshEntity(entity);
 				}
 			}
-			var limbStack = limb.getLimbItemStack(player);
-			if (!limbStack.isEmpty()) {
-				player.addItem(limbStack);
-			}
+		}
+		var limbStack = limb.getLimbItemStack(player);
+		if (!limbStack.isEmpty()) {
+			player.addItem(limbStack);
 		}
 		getItemInHand(hand).hurtAndBreak(5, (LivingEntity) (Object) this, hand);
 		mannequin$stopSevering();
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(MannequinSounds.LIMB_SNAP);
+	}
+
+	@Unique
+	private void mannequin$severTorsoArm(Player player, MannequinLimb armLimb, List<ItemStack> drop) {
+		armLimb.severed = true;
+		var hand = getMainArm() == (armLimb.orientation == LimbOrientation.RIGHT ? HumanoidArm.RIGHT : HumanoidArm.LEFT) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+		drop.add(armLimb.getLimbItemStack(player));
+		drop.add(mannequin$getItemInHand(hand));
+		setItemInHand(hand, ItemStack.EMPTY);
 	}
 
 	@Override

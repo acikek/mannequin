@@ -2,6 +2,7 @@ package com.acikek.mannequin.mixin.client;
 
 import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.network.MannequinNetworking;
+import com.acikek.mannequin.util.LimbType;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinLimb;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -76,7 +77,7 @@ public class MinecraftMixin {
 		if (player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
 			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
 			mannequinEntity.mannequin$getData().slim = slim;
-			if (mannequinEntity.mannequin$getData().doll) {
+			if (mannequinEntity.mannequin$getData().doll && limbToSever.type != LimbType.TORSO) {
 				mannequinEntity.mannequin$sever(limbToSever, severingHand);
 				player.swing(severingHand);
 			}

@@ -28,6 +28,7 @@ public class LimbItem extends Item {
 		.build();
 
 	public static final Properties PROPERTIES = new Properties()
+		.component(DataComponents.MAX_STACK_SIZE, 1)
 		.component(LimbOrientation.DATA_COMPONENT_TYPE, LimbOrientation.NONE)
 		.component(SLIM_COMPONENT_TYPE, false);
 

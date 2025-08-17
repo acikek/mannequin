@@ -62,13 +62,16 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 		if (entity.getMainArm() == HumanoidArm.LEFT) {
 			right = !right;
 		}
+		if (stack.is(MannequinItems.SEVERS_HEADS) && leftLeg.severed && rightLeg.severed && entity instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getData().doll) {
+			return torso;
+		}
 		if (stack.is(MannequinItems.SEVERS_LEGS)) {
 			return right ? leftLeg : rightLeg;
 		}
 		if (stack.is(MannequinItems.SEVERS_ARMS)) {
 			return right ? leftArm : rightArm;
 		}
-		return null; // TODO
+		return null;
 	}
 
 	public MannequinLimb resolve(LimbType limbType, LimbOrientation limbOrientation) {

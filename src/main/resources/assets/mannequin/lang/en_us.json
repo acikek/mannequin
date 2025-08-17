@@ -8,10 +8,11 @@
 	"item.mannequin.arm.named": "%s's %s Arm",
 	"tag.item.mannequin.severs_legs": "Can Sever Legs",
 	"tag.item.mannequin.severs_arms": "Can Sever Arms",
+	"tag.item.mannequin.severs_heads": "Can Sever Heads",
 	"tag.item.mannequin.sever_tier_1": "Severs Limbs Poorly",
 	"tag.item.mannequin.sever_tier_2": "Severs Limbs Well",
 	"tag.item.mannequin.sever_tier_3": "Severs Limbs Excellently",
-	"subtitle.mannequin.severing": "Limb severing",
+	"subtitle.mannequin.severing": "Limb being severed",
 	"subtitle.mannequin.limb_snap": "Limb snaps",
 	"death.attack.mannequin_bleeding": "%s bled to death",
 	"death.attach.mannequin_bleeding.player": "%s bled to death whilst trying to escape %s"

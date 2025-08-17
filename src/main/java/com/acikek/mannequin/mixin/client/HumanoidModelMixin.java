@@ -62,7 +62,9 @@ public class HumanoidModelMixin<T extends HumanoidRenderState> {
 		arm.xRot = arm.xRot * 0.5F + xRot;
 		float zRot = leg ? (right ? (float) -Math.PI / 3 : (float) (-Math.PI + Math.PI / 3.0F)) : (float) (-Math.PI / 2);
 		arm.zRot = arm.zRot * 0.5F + zRot;
-		arm.yRot = leg ? (float) (Math.PI / 4) : (float) (-Math.PI / 10);
+		if (mannequinRenderState.mannequin$getData().severingLimb.type != LimbType.TORSO) {
+			arm.yRot = leg ? (float) (Math.PI / 4) : (float) (-Math.PI / 10);
+		}
 		if (!right) {
 			arm.y = 3.0F;
 		}

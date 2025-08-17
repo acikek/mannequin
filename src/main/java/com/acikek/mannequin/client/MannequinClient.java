@@ -95,6 +95,7 @@ public class MannequinClient implements ClientModInitializer {
 			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
 			if (entity instanceof MannequinEntity mannequinEntity) {
 				mannequinEntity.mannequin$setData(payload.data());
+				entity.refreshDimensions();
 			}
 		});
 		ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {

@@ -49,6 +49,9 @@ public class PlayerRendererMixin {
 			return original;
 		}
 		var limbs = mannequinRenderState.mannequin$getData().limbs;
+		if (limbs.torso().severed) {
+			return original.add(0.0, -1.4, 0.0);
+		}
 		if (limbs.leftLeg().severed && limbs.rightLeg().severed) {
 			return original.add(0.0, -0.7, 0.0);
 		}

@@ -2,6 +2,7 @@ package com.acikek.mannequin.network;
 
 import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.client.MannequinClient;
+import com.acikek.mannequin.util.LimbType;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinEntityData;
 import com.acikek.mannequin.util.MannequinLimb;
@@ -9,6 +10,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -173,11 +175,11 @@ public class MannequinNetworking {
 				context.responseSender().sendPacket(new UpdateMannequinEntityData(OptionalInt.of(payload.entityId()), mannequinEntity.mannequin$getData()));
 			}
 		});
-		/*ServerPlayerEvents.JOIN.register(player -> {
-			if (player instanceof MannequinEntity mannequinEntity) {
-				ServerPlayNetworking.send(player, new UpdateMannequinEntityData(OptionalInt.empty(), mannequinEntity.mannequin$getData()));
+		ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+			if (entity instanceof MannequinEntity) {
+				entity.refreshDimensions();
 			}
-		});*/
+		});
 	}
 
 	public record StartSeveringResult(boolean active, int ticks, MannequinLimb severedLimb) {
@@ -195,7 +197,7 @@ public class MannequinNetworking {
 		var stack = player.getItemInHand(hand);
 		var limbToSever = mannequinEntity.mannequin$getData().limbs.resolve(player, stack, hand);
 		if (limbToSever != null && !limbToSever.severed) {
-			if (mannequinEntity.mannequin$getData().doll) {
+			if (mannequinEntity.mannequin$getData().doll && limbToSever.type != LimbType.TORSO) {
 				mannequinEntity.mannequin$sever(limbToSever, hand);
 				return new StartSeveringResult(false, 0, limbToSever);
 			}
