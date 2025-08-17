@@ -3,15 +3,15 @@
 	"id": "mannequin",
 	"version": "${version}",
 	"name": "Mannequin",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Become a doll.",
 	"authors": [
-		"Me!"
+		"skypriot"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/acikek/mannequin",
+		"sources": "https://github.com/acikek/mannequin"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/mannequin/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -31,8 +31,5 @@
 		"minecraft": "~1.21.8",
 		"java": ">=21",
 		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
 	}
 }
