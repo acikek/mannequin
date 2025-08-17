@@ -277,6 +277,12 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		limb.profile = Optional.ofNullable(profile);
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(SoundEvents.WOOD_PLACE);
+		if (((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer) {
+			var watcherPayload = new MannequinNetworking.UpdateLimb(serverPlayer.getId(), false, limb);
+			for (var watcher : PlayerLookup.tracking(serverPlayer)) {
+				ServerPlayNetworking.send(watcher, watcherPayload);
+			}
+		}
 	}
 
 	@Override

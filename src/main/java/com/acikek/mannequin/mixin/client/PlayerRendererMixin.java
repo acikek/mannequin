@@ -1,5 +1,6 @@
 package com.acikek.mannequin.mixin.client;
 
+import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.client.render.CustomLimbsLayer;
 import com.acikek.mannequin.client.render.PlayerBloodLayer;
 import com.acikek.mannequin.util.MannequinEntity;
@@ -34,6 +35,15 @@ public class PlayerRendererMixin {
 			mannequinRenderState.mannequin$setData(mannequinEntity.mannequin$getData());
 			mannequinRenderState.mannequin$setProfile(abstractClientPlayer.getGameProfile());
 			mannequinRenderState.mannequin$setDeltaTime(f);
+			if (playerRenderState.nameTagAttachment == null) {
+				return;
+			}
+			if (mannequinEntity.mannequin$getData().limbs.torso().severed) {
+				playerRenderState.nameTagAttachment = playerRenderState.nameTagAttachment.add(0.0, 1.55, 0.0);
+			}
+			else if (mannequinEntity.mannequin$getData().limbs.leftLeg().severed && mannequinEntity.mannequin$getData().limbs.rightLeg().severed) {
+				playerRenderState.nameTagAttachment = playerRenderState.nameTagAttachment.add(0.0, 0.65, 0.0);
+			}
 		}
 	}
 

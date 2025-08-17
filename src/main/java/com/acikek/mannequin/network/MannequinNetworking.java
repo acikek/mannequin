@@ -197,6 +197,7 @@ public class MannequinNetworking {
 		var stack = player.getItemInHand(hand);
 		var limbToSever = mannequinEntity.mannequin$getData().limbs.resolve(player, stack, hand);
 		if (limbToSever != null && !limbToSever.severed) {
+			mannequinEntity.mannequin$getData().slim = payload.slim();
 			if (mannequinEntity.mannequin$getData().doll && limbToSever.type != LimbType.TORSO) {
 				mannequinEntity.mannequin$sever(limbToSever, hand);
 				return new StartSeveringResult(false, 0, limbToSever);
@@ -204,7 +205,6 @@ public class MannequinNetworking {
 			int severingTicks = limbToSever.getSeveringTicks(stack);
 			if (severingTicks >= 0) {
 				mannequinEntity.mannequin$startSevering(limbToSever, hand, severingTicks);
-				mannequinEntity.mannequin$getData().slim = payload.slim();
 			}
 			return new StartSeveringResult(true, severingTicks, null);
 		}
