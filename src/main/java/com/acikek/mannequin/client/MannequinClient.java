@@ -7,14 +7,19 @@ import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
 import com.acikek.mannequin.util.MannequinEntity;
+import com.acikek.mannequin.util.MannequinRenderState;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
+import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 
@@ -91,6 +96,23 @@ public class MannequinClient implements ClientModInitializer {
 				ClientPlayNetworking.send(new MannequinNetworking.RequestDataUpdate(entity.getId()));
 			}
 		});
+	}
+
+	public static void test(MannequinRenderState state, ModelPart rightArm) {
+		float h = state.mannequin$getData().severingTicksRemaining % 10;
+		float i = h - state.mannequin$getDeltaTime() + 1.0F;
+		float j = 1.0F - i / 10.0F;
+		rightArm.xRot = Mth.cos(j * 2.0F * (float) Math.PI) * 0.3F;
+		rightArm.xRot = rightArm.xRot * 0.5F - (float) (Math.PI / 2.5F);
+		rightArm.zRot = rightArm.zRot * 0.5F - (float) (Math.PI / 2);
+		rightArm.yRot = (float) (-Math.PI / 10);
+	}
+
+	public static void test2(PoseStack poseStack) {
+		//poseStack.mulPose(Axis.XP.rotationDegrees(180.0F));
+		poseStack.mulPose(Axis.YP.rotationDegrees(180.0F));
+		poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
+		poseStack.translate(0.0F, 0.0F, 1.0F);
 	}
 
 	/*public static TextureSheetParticle createBloodHang(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double d, double e, double f, double g, double h, double i) {

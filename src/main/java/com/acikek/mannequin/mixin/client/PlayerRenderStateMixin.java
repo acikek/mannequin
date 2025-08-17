@@ -1,5 +1,6 @@
 package com.acikek.mannequin.mixin.client;
 
+import com.acikek.mannequin.util.MannequinEntityData;
 import com.acikek.mannequin.util.MannequinLimbs;
 import com.acikek.mannequin.util.MannequinRenderState;
 import com.mojang.authlib.GameProfile;
@@ -13,19 +14,22 @@ import org.spongepowered.asm.mixin.Unique;
 public class PlayerRenderStateMixin implements MannequinRenderState {
 
 	@Unique
-	private @Nullable MannequinLimbs limbs;
+	private @Nullable MannequinEntityData data;
 
 	@Unique
 	private @Nullable GameProfile profile;
 
+	@Unique
+	private float deltaTime;
+
 	@Override
-	public @Nullable MannequinLimbs mannequin$getLimbs() {
-		return limbs;
+	public @Nullable MannequinEntityData mannequin$getData() {
+		return data;
 	}
 
 	@Override
-	public void mannequin$setLimbs(MannequinLimbs limbs) {
-		this.limbs = limbs;
+	public void mannequin$setData(MannequinEntityData data) {
+		this.data = data;
 	}
 
 	@Override
@@ -36,5 +40,15 @@ public class PlayerRenderStateMixin implements MannequinRenderState {
 	@Override
 	public void mannequin$setProfile(GameProfile profile) {
 		this.profile = profile;
+	}
+
+	@Override
+	public float mannequin$getDeltaTime() {
+		return deltaTime;
+	}
+
+	@Override
+	public void mannequin$setDeltaTime(float deltaTime) {
+		this.deltaTime = deltaTime;
 	}
 }

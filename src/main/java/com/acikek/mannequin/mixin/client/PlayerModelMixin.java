@@ -14,13 +14,10 @@ public class PlayerModelMixin {
 
 	@Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;)V", at = @At("TAIL"))
 	private void mannequin$hideParts(PlayerRenderState playerRenderState, CallbackInfo ci) {
-		if (!(playerRenderState instanceof MannequinRenderState mannequinRenderState)) {
+		if (!(playerRenderState instanceof MannequinRenderState mannequinRenderState) || mannequinRenderState.mannequin$getData() == null) {
 			return;
 		}
-		var limbs = mannequinRenderState.mannequin$getLimbs();
-		if (limbs == null) {
-			return;
-		}
+		var limbs = mannequinRenderState.mannequin$getData().limbs;
 		var model = ((HumanoidModel<?>) (Object) this);
 		model.leftLeg.visible = limbs.leftLeg().isBaseVisible(mannequinRenderState.mannequin$getProfile());
 		model.rightLeg.visible = limbs.rightLeg().isBaseVisible(mannequinRenderState.mannequin$getProfile());

@@ -28,16 +28,16 @@ public class CustomLimbsLayer extends RenderLayer<PlayerRenderState, PlayerModel
 
 	@Override
 	public void render(PoseStack poseStack, MultiBufferSource multiBufferSource, int i, PlayerRenderState entityRenderState, float f, float g) {
-		if (!(entityRenderState instanceof MannequinRenderState mannequinRenderState) || mannequinRenderState.mannequin$getLimbs() == null) {
+		if (!(entityRenderState instanceof MannequinRenderState mannequinRenderState) || mannequinRenderState.mannequin$getData() == null) {
 			return;
 		}
-		var limbs = mannequinRenderState.mannequin$getLimbs();
-		mannequinRenderState.mannequin$setLimbs(null);
+		var data = mannequinRenderState.mannequin$getData();
+		mannequinRenderState.mannequin$setData(null);
 		wide.setupAnim(entityRenderState);
 		slim.setupAnim(entityRenderState);
-		mannequinRenderState.mannequin$setLimbs(limbs);
-		for (var limb : mannequinRenderState.mannequin$getLimbs().getParts()) {
-			if (limb.severed) {
+		mannequinRenderState.mannequin$setData(data);
+		for (var limb : mannequinRenderState.mannequin$getData().limbs.getParts()) {
+			if (limb.severed || (limb.profile.isPresent() && limb.profile.get().gameProfile().equals(mannequinRenderState.mannequin$getProfile()))) {
 				continue;
 			}
 			var skin = limb.profile.isPresent() && limb.profile.get().isResolved()

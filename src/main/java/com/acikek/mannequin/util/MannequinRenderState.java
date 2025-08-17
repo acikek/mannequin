@@ -5,11 +5,15 @@ import org.jetbrains.annotations.Nullable;
 
 public interface MannequinRenderState {
 
-	@Nullable MannequinLimbs mannequin$getLimbs();
+	@Nullable MannequinEntityData mannequin$getData();
 
-	void mannequin$setLimbs(MannequinLimbs limbs);
+	void mannequin$setData(MannequinEntityData data);
 
 	@Nullable GameProfile mannequin$getProfile();
 
 	void mannequin$setProfile(GameProfile profile);
+
+	float mannequin$getDeltaTime();
+
+	void mannequin$setDeltaTime(float deltaTime);
 }

@@ -31,8 +31,9 @@ public class PlayerRendererMixin {
 	@Inject(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V", at = @At("TAIL"))
 	private void mannequin$extractMannequinRenderState(AbstractClientPlayer abstractClientPlayer, PlayerRenderState playerRenderState, float f, CallbackInfo ci) {
 		if (abstractClientPlayer instanceof MannequinEntity mannequinEntity && playerRenderState instanceof MannequinRenderState mannequinRenderState) {
-			mannequinRenderState.mannequin$setLimbs(mannequinEntity.mannequin$getData().limbs);
+			mannequinRenderState.mannequin$setData(mannequinEntity.mannequin$getData());
 			mannequinRenderState.mannequin$setProfile(abstractClientPlayer.getGameProfile());
+			mannequinRenderState.mannequin$setDeltaTime(f);
 		}
 	}
 
@@ -44,13 +45,10 @@ public class PlayerRendererMixin {
 	@ModifyReturnValue(method = "getRenderOffset(Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;)Lnet/minecraft/world/phys/Vec3;", at = @At("RETURN"))
 	private Vec3 mannequin$shortenPlayer(Vec3 original, @Share("renderState") LocalRef<PlayerRenderState> stateRef) {
 		var renderState = stateRef.get();
-		if (!(renderState instanceof MannequinRenderState mannequinRenderState)) {
+		if (!(renderState instanceof MannequinRenderState mannequinRenderState) || mannequinRenderState.mannequin$getData() == null) {
 			return original;
 		}
-		var limbs = mannequinRenderState.mannequin$getLimbs();
-		if (limbs == null) {
-			return original;
-		}
+		var limbs = mannequinRenderState.mannequin$getData().limbs;
 		if (limbs.leftLeg().severed && limbs.rightLeg().severed) {
 			return original.add(0.0, -0.7, 0.0);
 		}
