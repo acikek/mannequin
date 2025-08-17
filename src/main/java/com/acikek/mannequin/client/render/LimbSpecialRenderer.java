@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ResolvableProfile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.HashMap;
@@ -70,25 +71,24 @@ public class LimbSpecialRenderer implements SpecialModelRenderer<LimbSpecialRend
 	@Override
 	public void render(@Nullable Argument argument, ItemDisplayContext itemDisplayContext, PoseStack poseStack, MultiBufferSource multiBufferSource, int i, int j, boolean bl) {
 		var arg = Objects.requireNonNullElse(argument, defaultArgument);
-		if (itemDisplayContext == ItemDisplayContext.GROUND) {
-			poseStack.pushPose();
-			//poseStack.translate(0.2F, -0.8F, -0.2F); // FIXME these values make no sense
-			//poseStack.mulPose(new Quaternionf().rotateXYZ(65F * (float) (Math.PI / 180.0), -15F * (float) (Math.PI / 180.0), 0F));
-		}
 		poseStack.pushPose();
-		poseStack.translate(0.5F, 1.5F, 0.5F);
+		poseStack.translate(0.5F, itemDisplayContext == ItemDisplayContext.GROUND ? 0.0F : 1.5F, 0.5F);
 		poseStack.scale(-1.0F, -1.0F, 1.0F);
+		if (itemDisplayContext == ItemDisplayContext.GROUND) {
+			// FIXME TODO FIXME TODO FIXME.
+			//poseStack.last().rotate(new Quaternionf().rotateXYZ((float) Math.toRadians(65), 0F, (float) Math.toRadians(-15)));
+		}
 		VertexConsumer vertexConsumer = multiBufferSource.getBuffer(arg.renderType());
 		model.renderToBuffer(poseStack, vertexConsumer, i, OverlayTexture.NO_OVERLAY);
 		poseStack.popPose();
-		if (itemDisplayContext == ItemDisplayContext.GROUND) {
-			poseStack.popPose();
-		}
 	}
 
 	@Override
 	public void getExtents(Set<Vector3f> set) {
-
+		var poseStack = new PoseStack();
+		poseStack.translate(0.5F, 0.0F, 0.5F);
+		poseStack.scale(-1.0F, -1.0F, 1.0F);
+		model.root().getExtentsForGui(poseStack, set);
 	}
 
 	public record Argument(RenderType renderType) { }
