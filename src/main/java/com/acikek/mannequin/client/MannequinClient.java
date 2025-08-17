@@ -3,6 +3,7 @@ package com.acikek.mannequin.client;
 import com.acikek.mannequin.Mannequin;
 import com.acikek.mannequin.client.render.LimbModel;
 import com.acikek.mannequin.client.render.LimbSpecialRenderer;
+import com.acikek.mannequin.mixin.client.MinecraftAccessor;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.util.LimbOrientation;
 import com.acikek.mannequin.util.LimbType;
@@ -64,6 +65,9 @@ public class MannequinClient implements ClientModInitializer {
 			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
 			if (entity instanceof MannequinEntity mannequinEntity) {
 				mannequinEntity.mannequin$stopSevering();
+			}
+			if (payload.entityId().isEmpty()) {
+				((MinecraftAccessor) Minecraft.getInstance()).setRightClickDelay(4);
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateLimb.TYPE, (payload, context) -> {

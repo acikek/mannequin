@@ -19,6 +19,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
@@ -162,12 +163,12 @@ public class MannequinNetworking {
 				}
 			}
 			else {
-				stopSevering(context, mannequinEntity, true);
+				stopSevering(context.player(), mannequinEntity, true);
 			}
 		});
 		ServerPlayNetworking.registerGlobalReceiver(StopSevering.TYPE, (payload, context) -> {
 			if (context.player() instanceof MannequinEntity mannequinEntity) {
-				stopSevering(context, mannequinEntity, false);
+				stopSevering(context.player(), mannequinEntity, false);
 			}
 		});
 		ServerPlayNetworking.registerGlobalReceiver(RequestDataUpdate.TYPE, (payload, context) -> {
@@ -211,13 +212,13 @@ public class MannequinNetworking {
 		return StartSeveringResult.empty();
 	}
 
-	public static void stopSevering(ServerPlayNetworking.Context context, MannequinEntity mannequinEntity, boolean force) {
+	public static void stopSevering(ServerPlayer player, MannequinEntity mannequinEntity, boolean force) {
 		mannequinEntity.mannequin$stopSevering();
 		if (force) {
-			context.responseSender().sendPacket(new StopSevering(OptionalInt.empty()));
+			ServerPlayNetworking.send(player, new StopSevering(OptionalInt.empty()));
 		}
-		var watcherPayload = new StopSevering(OptionalInt.of(context.player().getId()));
-		for (var watcher : PlayerLookup.tracking(context.player())) {
+		var watcherPayload = new StopSevering(OptionalInt.of(player.getId()));
+		for (var watcher : PlayerLookup.tracking(player)) {
 			ServerPlayNetworking.send(watcher, watcherPayload);
 		}
 	}

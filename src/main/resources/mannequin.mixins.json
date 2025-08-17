@@ -19,6 +19,7 @@
 		"client.ItemInHandLayerMixin",
 		"client.ItemInHandRendererMixin",
 		"client.LivingEntityRendererAccessor",
+		"client.MinecraftAccessor",
 		"client.MinecraftMixin",
 		"client.MultiPlayerGameModeMixin",
 		"client.PlayerModelMixin",

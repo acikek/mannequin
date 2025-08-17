@@ -76,12 +76,8 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Unique
 	private MannequinEntityData data = new MannequinEntityData();
 
-	@Unique
-	private boolean dirty;
-
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void mannequin$tick(CallbackInfo ci) {
-		//mannequin$tickData();
 		mannequin$tickDamage();
 		if (data.severing) {
 			data.severingTicksRemaining--;
@@ -89,18 +85,6 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 				mannequin$sever();
 			}
 		}
-	}
-
-	private void mannequin$tickData() {
-		if (!dirty || !(((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer)) {
-			return;
-		}
-		ServerPlayNetworking.send(serverPlayer, new MannequinNetworking.UpdateMannequinEntityData(OptionalInt.empty(), data));
-		var watcherPayload = new MannequinNetworking.UpdateMannequinEntityData(OptionalInt.of(serverPlayer.getId()), data);
-		for (var watcher : PlayerLookup.tracking(serverPlayer)) {
-			ServerPlayNetworking.send(watcher, watcherPayload);
-		}
-		dirty = false;
 	}
 
 	@Unique
@@ -321,10 +305,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	private void mannequin$readSaveData(ValueInput valueInput, CallbackInfo ci) {
 		if (((LivingEntity) (Object) this) instanceof Player) {
-			valueInput.read("mannequin$entity_data", MannequinEntityData.CODEC).ifPresent(data -> {
-				this.data = data;
-				dirty = true;
-			});
+			valueInput.read("mannequin$entity_data", MannequinEntityData.CODEC).ifPresent(data -> this.data = data);
 		}
 	}
 }

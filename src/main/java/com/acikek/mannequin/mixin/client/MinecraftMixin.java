@@ -45,6 +45,8 @@ public class MinecraftMixin {
 	@Nullable
 	public ClientLevel level;
 
+	@Shadow
+	private int rightClickDelay;
 	@Unique
 	private @Nullable MannequinLimb limbToSever;
 
@@ -61,20 +63,14 @@ public class MinecraftMixin {
 		}
 		if ((!options.keyAttack.isDown() || !options.keyUse.isDown()) && mannequinEntity.mannequin$getData().severing) {
 			mannequinEntity.mannequin$stopSevering();
+			rightClickDelay = 4;
 			ClientPlayNetworking.send(new MannequinNetworking.StopSevering(OptionalInt.empty()));
-		}
-	}
-
-	@Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
-	private void mannequin$cancelStartAttack(CallbackInfoReturnable<Boolean> cir) {
-		if (player instanceof MannequinEntity mannequinEntity && (mannequinEntity.mannequin$getData().severing || limbToSever != null || severingHand != null)) {
-			cir.setReturnValue(false);
 		}
 	}
 
 	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 16))
 	private void mannequin$tryStartSevering(CallbackInfo ci) {
-		if (player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
+		if (rightClickDelay == 0 && player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
 			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
 			mannequinEntity.mannequin$getData().slim = slim;
 			if (mannequinEntity.mannequin$getData().doll && limbToSever.type != LimbType.TORSO) {
@@ -89,6 +85,19 @@ public class MinecraftMixin {
 		}
 	}
 
+	@Inject(method = "handleKeybinds", at = @At("TAIL"))
+	private void mannequin$clearQueryData(CallbackInfo ci) {
+		limbToSever = null;
+		severingHand = null;
+	}
+
+	@Inject(method = "startAttack", at = @At("HEAD"), cancellable = true)
+	private void mannequin$cancelStartAttack(CallbackInfoReturnable<Boolean> cir) {
+		if (player instanceof MannequinEntity mannequinEntity && (mannequinEntity.mannequin$getData().severing || limbToSever != null || severingHand != null)) {
+			cir.setReturnValue(false);
+		}
+	}
+
 	@Inject(method = "continueAttack", at = @At("HEAD"), cancellable = true)
 	private void mannequin$cancelContinueAttack(boolean bl, CallbackInfo ci) {
 		if (player instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getData().severing) {
@@ -96,10 +105,11 @@ public class MinecraftMixin {
 		}
 	}
 
-	@Inject(method = "handleKeybinds", at = @At("TAIL"))
-	private void mannequin$clearQueryData(CallbackInfo ci) {
-		limbToSever = null;
-		severingHand = null;
+	@Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
+	private void mannequin$cancelStartUseItem(CallbackInfo ci) {
+		if (player instanceof MannequinEntity mannequinEntity && (mannequinEntity.mannequin$getData().severing || limbToSever != null || severingHand != null)) {
+			ci.cancel();
+		}
 	}
 
 	@ModifyExpressionValue(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;isSpectator()Z", ordinal = 1))
