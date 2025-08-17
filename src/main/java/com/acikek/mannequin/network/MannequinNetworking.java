@@ -83,6 +83,22 @@ public class MannequinNetworking {
 		}
 	}
 
+	public record UpdateDoll(OptionalInt entityId, boolean doll) implements CustomPacketPayload {
+
+		public static final Type<UpdateDoll> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_doll"));
+
+		public static final StreamCodec<FriendlyByteBuf, UpdateDoll> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.OPTIONAL_VAR_INT, UpdateDoll::entityId,
+			ByteBufCodecs.BOOL, UpdateDoll::doll,
+			UpdateDoll::new
+		);
+
+		@Override
+		public @NotNull Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public record UpdateMannequinEntityData(OptionalInt entityId, MannequinEntityData data) implements CustomPacketPayload {
 
 		public static final Type<UpdateMannequinEntityData> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_mannequin_entity_data"));
@@ -118,6 +134,7 @@ public class MannequinNetworking {
 		PayloadTypeRegistry.playC2S().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateLimb.TYPE, UpdateLimb.STREAM_CODEC);
+		PayloadTypeRegistry.playS2C().register(UpdateDoll.TYPE, UpdateDoll.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateMannequinEntityData.TYPE, UpdateMannequinEntityData.STREAM_CODEC);
 		PayloadTypeRegistry.playC2S().register(RequestDataUpdate.TYPE, RequestDataUpdate.STREAM_CODEC);
 		registerServer();
@@ -156,6 +173,11 @@ public class MannequinNetworking {
 				context.responseSender().sendPacket(new UpdateMannequinEntityData(OptionalInt.of(payload.entityId()), mannequinEntity.mannequin$getData()));
 			}
 		});
+		/*ServerPlayerEvents.JOIN.register(player -> {
+			if (player instanceof MannequinEntity mannequinEntity) {
+				ServerPlayNetworking.send(player, new UpdateMannequinEntityData(OptionalInt.empty(), mannequinEntity.mannequin$getData()));
+			}
+		});*/
 	}
 
 	public record StartSeveringResult(boolean active, int ticks, MannequinLimb severedLimb) {

@@ -1,10 +1,12 @@
 package com.acikek.mannequin;
 
+import com.acikek.mannequin.command.MannequinCommand;
 import com.acikek.mannequin.item.MannequinItems;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.sound.MannequinSounds;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -31,5 +33,8 @@ public class Mannequin implements ModInitializer {
 		MannequinItems.register();
 		MannequinSounds.register();
 		MannequinNetworking.register();
+		CommandRegistrationCallback.EVENT.register((commandDispatcher, commandBuildContext, commandSelection) -> {
+			MannequinCommand.register(commandDispatcher);
+		});
 	}
 }

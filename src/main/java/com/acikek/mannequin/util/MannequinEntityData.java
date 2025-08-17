@@ -64,4 +64,20 @@ public class MannequinEntityData {
 	);
 
 	public static final StreamCodec<FriendlyByteBuf, MannequinEntityData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC).cast();
+
+	@Override
+	public String toString() {
+		return "MannequinEntityData{" +
+			"limbs=" + limbs +
+			", severing=" + severing +
+			", doll=" + doll +
+			", severingLimb=" + severingLimb +
+			", severingHand=" + severingHand +
+			", severingTicksRemaining=" + severingTicksRemaining +
+			", damageTicksElapsed=" + damageTicksElapsed +
+			", ticksToBleed=" + ticksToBleed +
+			", totalBleedingTicks=" + totalBleedingTicks +
+			", slim=" + slim +
+			'}';
+	}
 }

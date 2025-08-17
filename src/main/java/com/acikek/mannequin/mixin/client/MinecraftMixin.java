@@ -82,9 +82,9 @@ public class MinecraftMixin {
 			}
 			else {
 				mannequinEntity.mannequin$startSevering(limbToSever, severingHand, Integer.MAX_VALUE);
-				ClientPlayNetworking.send(new MannequinNetworking.StartSevering(OptionalInt.empty(), severingHand == InteractionHand.MAIN_HAND, slim));
 				MannequinClient.playSeveringSound(player);
 			}
+			ClientPlayNetworking.send(new MannequinNetworking.StartSevering(OptionalInt.empty(), severingHand == InteractionHand.MAIN_HAND, slim));
 		}
 	}
 

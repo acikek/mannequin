@@ -9,6 +9,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -49,6 +50,7 @@ public class LimbItem extends Item {
 			return super.use(level, player, interactionHand);
 		}
 		mannequinEntity.mannequin$attach(limbToAttach, stack.get(DataComponents.PROFILE));
+		player.awardStat(Stats.ITEM_USED.get(this));
 		stack.consume(1, player);
 		return InteractionResult.SUCCESS;
 	}

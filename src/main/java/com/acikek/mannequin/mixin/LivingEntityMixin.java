@@ -37,6 +37,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
@@ -70,6 +72,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Shadow
 	public abstract void setItemInHand(InteractionHand interactionHand, ItemStack itemStack);
 
+	@Shadow
+	public abstract void setItemSlot(EquipmentSlot equipmentSlot, ItemStack itemStack);
+
 	@Unique
 	private MannequinEntityData data = new MannequinEntityData();
 
@@ -78,7 +83,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void mannequin$tick(CallbackInfo ci) {
-		mannequin$tickData();
+		//mannequin$tickData();
 		mannequin$tickDamage();
 		if (data.severing) {
 			data.severingTicksRemaining--;
@@ -135,20 +140,6 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		mannequin$sever(data.severingLimb, data.severingHand);
 	}
 
-	@Unique
-	private void mannequin$makeDoll() {
-		data.damageTicksElapsed = 0;
-		data.totalBleedingTicks = 0;
-		data.ticksToBleed = 0;
-		data.doll = true;
-		makeSound(SoundEvents.WITHER_SKELETON_AMBIENT);
-	}
-
-	@Inject(method = "stopUsingItem", at = @At("HEAD"))
-	private void mannequin$cancelSevering(CallbackInfo ci) {
-		mannequin$stopSevering();
-	}
-
 	@ModifyReturnValue(method = "getDimensions", at = @At("RETURN"))
 	private EntityDimensions mannequin$resize(EntityDimensions original) {
 		if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
@@ -181,7 +172,8 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Unique
 	private boolean mannequin$isSlotSevered(EquipmentSlot equipmentSlot) {
-		return (equipmentSlot == EquipmentSlot.MAINHAND && data.limbs.getArm(getMainArm()).severed)
+		return ((equipmentSlot == EquipmentSlot.FEET || equipmentSlot == EquipmentSlot.LEGS) && data.limbs.leftLeg().severed && data.limbs.rightLeg().severed)
+			|| (equipmentSlot == EquipmentSlot.MAINHAND && data.limbs.getArm(getMainArm()).severed)
 			|| (equipmentSlot == EquipmentSlot.OFFHAND && data.limbs.getArm(getMainArm().getOpposite()).severed);
 	}
 
@@ -224,19 +216,28 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	public void mannequin$sever(MannequinLimb limb, InteractionHand hand) {
 		limb.severed = true;
 		if (((LivingEntity) (Object) this) instanceof Player player) {
+			var severedHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+			List<ItemStack> drop = new ArrayList<>();
+			drop.add(mannequin$getItemInHand(severedHand));
+			setItemInHand(severedHand, ItemStack.EMPTY);
+			if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
+				drop.add(mannequin$getItemBySlot(EquipmentSlot.FEET));
+				drop.add(mannequin$getItemBySlot(EquipmentSlot.LEGS));
+				setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
+				setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
+			}
+			for (var stack : drop) {
+				if (!stack.isEmpty()) {
+					var entity = createItemStackToDrop(stack, false, false);
+					if (entity != null) {
+						player.level().addFreshEntity(entity);
+					}
+				}
+			}
 			var limbStack = limb.getLimbItemStack(player);
 			if (!limbStack.isEmpty()) {
 				player.addItem(limbStack);
 			}
-			var severedHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
-			var heldStack = mannequin$getItemInHand(severedHand);
-			if (!heldStack.isEmpty()) {
-				var heldDrop = createItemStackToDrop(heldStack, true, false);
-				if (heldDrop != null) {
-					player.level().addFreshEntity(heldDrop);
-				}
-			}
-			setItemInHand(severedHand, ItemStack.EMPTY);
 		}
 		getItemInHand(hand).hurtAndBreak(5, (LivingEntity) (Object) this, hand);
 		mannequin$stopSevering();
@@ -253,13 +254,29 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	}
 
 	@Override
+	public void mannequin$makeDoll() {
+		data.damageTicksElapsed = 0;
+		data.totalBleedingTicks = 0;
+		data.ticksToBleed = 0;
+		data.doll = true;
+		makeSound(SoundEvents.WITHER_SKELETON_AMBIENT);
+		if (((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer) {
+			ServerPlayNetworking.send(serverPlayer, new MannequinNetworking.UpdateDoll(OptionalInt.empty(), true));
+			var watcherPayload = new MannequinNetworking.UpdateDoll(OptionalInt.of(serverPlayer.getId()), true);
+			for (var watcher : PlayerLookup.tracking(serverPlayer)) {
+				ServerPlayNetworking.send(watcher, watcherPayload);
+			}
+		}
+	}
+
+	@Override
 	public ItemStack mannequin$getItemBySlot(EquipmentSlot slot) {
 		return equipment.get(slot);
 	}
 
 	@Override
 	public ItemStack mannequin$getItemInHand(InteractionHand hand) {
-		return mannequin$getItemBySlot( hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
+		return mannequin$getItemBySlot(hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
 	}
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))

@@ -80,6 +80,17 @@ public class MannequinClient implements ClientModInitializer {
 				else payload.limb().profile.ifPresent(profile -> mannequinEntity.mannequin$attach(limb, profile));
 			}
 		});
+		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateDoll.TYPE, (payload, context) -> {
+			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
+			if (entity instanceof MannequinEntity mannequinEntity) {
+				if (payload.doll()) {
+					mannequinEntity.mannequin$makeDoll();
+				}
+				else {
+					mannequinEntity.mannequin$getData().doll = false;
+				}
+			}
+		});
 		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateMannequinEntityData.TYPE, (payload, context) -> {
 			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
 			if (entity instanceof MannequinEntity mannequinEntity) {
@@ -87,7 +98,7 @@ public class MannequinClient implements ClientModInitializer {
 			}
 		});
 		ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-			if (entity instanceof MannequinEntity) {
+			if (entity instanceof Player && entity instanceof MannequinEntity) {
 				ClientPlayNetworking.send(new MannequinNetworking.RequestDataUpdate(entity.getId()));
 			}
 		});

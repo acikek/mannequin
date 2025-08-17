@@ -20,6 +20,8 @@ public interface MannequinEntity {
 
 	void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile);
 
+	void mannequin$makeDoll();
+
 	ItemStack mannequin$getItemBySlot(EquipmentSlot slot);
 
 	ItemStack mannequin$getItemInHand(InteractionHand hand);
