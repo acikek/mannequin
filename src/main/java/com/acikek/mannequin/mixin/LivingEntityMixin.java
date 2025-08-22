@@ -267,9 +267,8 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	}
 
 	@Override
-	public void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile) {
+	public void mannequin$attach(MannequinLimb limb) {
 		limb.severed = false;
-		limb.profile = Optional.ofNullable(profile);
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(SoundEvents.WOOD_PLACE);
 		if (((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer) {

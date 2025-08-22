@@ -18,7 +18,7 @@ public interface MannequinEntity {
 
 	void mannequin$sever(MannequinLimb limb, InteractionHand hand);
 
-	void mannequin$attach(MannequinLimb limb, @Nullable ResolvableProfile profile);
+	void mannequin$attach(MannequinLimb limb);
 
 	void mannequin$makeDoll();
 

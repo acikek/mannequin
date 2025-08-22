@@ -22,6 +22,7 @@ public class MannequinLimb {
 			LimbType.CODEC.fieldOf("type").forGetter(limb -> limb.type),
 			LimbOrientation.CODEC.fieldOf("orientation").forGetter(limb -> limb.orientation),
 			Codec.BOOL.fieldOf("severed").forGetter(limb -> limb.severed),
+			Codec.BOOL.optionalFieldOf("slim").forGetter(limb -> limb.slim),
 			ResolvableProfile.CODEC.optionalFieldOf("profile").forGetter(limb -> limb.profile)
 		).apply(instance, MannequinLimb::new)
 	);
@@ -30,6 +31,7 @@ public class MannequinLimb {
 		LimbType.STREAM_CODEC, limb -> limb.type,
 		LimbOrientation.STREAM_CODEC, limb -> limb.orientation,
 		ByteBufCodecs.BOOL, limb -> limb.severed,
+		ByteBufCodecs.optional(ByteBufCodecs.BOOL), limb -> limb.slim,
 		ByteBufCodecs.optional(ResolvableProfile.STREAM_CODEC), limb -> limb.profile,
 		MannequinLimb::new
 	);
@@ -38,17 +40,19 @@ public class MannequinLimb {
 	public final LimbOrientation orientation;
 
 	public boolean severed;
+	public Optional<Boolean> slim;
 	public Optional<ResolvableProfile> profile;
 
-	public MannequinLimb(LimbType type, LimbOrientation orientation, boolean severed, Optional<ResolvableProfile> profile) {
+	public MannequinLimb(LimbType type, LimbOrientation orientation, boolean severed, Optional<Boolean> slim, Optional<ResolvableProfile> profile) {
 		this.type = type;
 		this.orientation = orientation;
 		this.severed = severed;
+		this.slim = slim;
 		this.profile = profile;
 	}
 
 	public MannequinLimb(LimbType type, LimbOrientation orientation) {
-		this(type, orientation, false, Optional.empty());
+		this(type, orientation, false, Optional.empty(), Optional.empty());
 	}
 
 	public ItemStack getLimbItemStack(Player player) {
@@ -59,7 +63,7 @@ public class MannequinLimb {
 		stack.set(LimbOrientation.DATA_COMPONENT_TYPE, orientation);
 		stack.set(DataComponents.PROFILE, profile.orElseGet(() -> new ResolvableProfile(player.getGameProfile())));
 		if (player instanceof MannequinEntity mannequinEntity) {
-			stack.set(LimbItem.SLIM_COMPONENT_TYPE, mannequinEntity.mannequin$getData().slim);
+			stack.set(LimbItem.SLIM_COMPONENT_TYPE, slim.orElseGet(() -> mannequinEntity.mannequin$getData().slim));
 		}
 		return stack;
 	}
@@ -88,6 +92,7 @@ public class MannequinLimb {
 			"type=" + type +
 			", orientation=" + orientation +
 			", severed=" + severed +
+			", slim=" + slim +
 			", profile=" + profile.flatMap(ResolvableProfile::name).orElse("<none>") +
 			'}';
 	}

@@ -74,6 +74,9 @@ public class MannequinClient implements ClientModInitializer {
 			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
 			if (entity instanceof MannequinEntity mannequinEntity) {
 				var limb = mannequinEntity.mannequin$getData().limbs.resolve(payload.limb().type, payload.limb().orientation);
+				if (limb == null) {
+					return;
+				}
 				if (payload.limb().severed) {
 					var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 					mannequinEntity.mannequin$sever(limb, hand);
@@ -81,7 +84,11 @@ public class MannequinClient implements ClientModInitializer {
 						player.swing(hand);
 					}
 				}
-				else payload.limb().profile.ifPresent(profile -> mannequinEntity.mannequin$attach(limb, profile));
+				else if (payload.limb().profile.isPresent()) {
+					limb.profile = payload.limb().profile;
+					limb.slim = payload.limb().slim;
+					mannequinEntity.mannequin$attach(limb);
+				}
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateDoll.TYPE, (payload, context) -> {

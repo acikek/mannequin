@@ -19,6 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 public class LimbItem extends Item {
 
 	public static final DataComponentType<Boolean> SLIM_COMPONENT_TYPE = DataComponentType.<Boolean>builder()
@@ -50,7 +52,9 @@ public class LimbItem extends Item {
 		if (limbToAttach == null || !limbToAttach.severed) {
 			return super.use(level, player, interactionHand);
 		}
-		mannequinEntity.mannequin$attach(limbToAttach, stack.get(DataComponents.PROFILE));
+		limbToAttach.profile = Optional.ofNullable(stack.get(DataComponents.PROFILE));
+		limbToAttach.slim = Optional.ofNullable(stack.get(SLIM_COMPONENT_TYPE));
+		mannequinEntity.mannequin$attach(limbToAttach);
 		player.awardStat(Stats.ITEM_USED.get(this));
 		stack.consume(1, player);
 		return InteractionResult.SUCCESS;
