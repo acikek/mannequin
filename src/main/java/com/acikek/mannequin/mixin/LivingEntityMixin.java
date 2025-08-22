@@ -22,7 +22,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +36,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 
 @Mixin(LivingEntity.class)
@@ -211,17 +209,11 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			return;
 		}
 		limb.severed = true;
-		var severedHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
 		List<ItemStack> drop = new ArrayList<>();
 		if (limb.type == LimbType.ARM) {
+			var severedHand = hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
 			drop.add(mannequin$getItemInHand(severedHand));
 			setItemInHand(severedHand, ItemStack.EMPTY);
-		}
-		if (limb.type == LimbType.LEG && data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
-			drop.add(mannequin$getItemBySlot(EquipmentSlot.FEET));
-			drop.add(mannequin$getItemBySlot(EquipmentSlot.LEGS));
-			setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
-			setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
 		}
 		else if (limb.type == LimbType.TORSO) {
 			if (!data.limbs.leftArm().severed) {
@@ -230,8 +222,16 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			if (!data.limbs.rightArm().severed) {
 				mannequin$severTorsoArm(player, data.limbs.rightArm(), drop);
 			}
+			data.limbs.leftLeg().severed = true;
+			data.limbs.rightLeg().severed = true;
 			drop.add(mannequin$getItemBySlot(EquipmentSlot.CHEST));
 			setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
+		}
+		if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
+			drop.add(mannequin$getItemBySlot(EquipmentSlot.FEET));
+			drop.add(mannequin$getItemBySlot(EquipmentSlot.LEGS));
+			setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
+			setItemSlot(EquipmentSlot.LEGS, ItemStack.EMPTY);
 		}
 		var limbStack = limb.getLimbItemStack(player);
 		if (!limbStack.isEmpty()) {

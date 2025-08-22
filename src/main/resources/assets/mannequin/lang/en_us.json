@@ -15,5 +15,14 @@
 	"subtitle.mannequin.severing": "Limb being severed",
 	"subtitle.mannequin.limb_snap": "Limb snaps",
 	"death.attack.mannequin_bleeding": "%s bled to death",
-	"death.attach.mannequin_bleeding.player": "%s bled to death whilst trying to escape %s"
+	"death.attach.mannequin_bleeding.player": "%s bled to death whilst trying to escape %s",
+	"command.mannequin.doll.success.single": "Turned %s into a doll",
+	"command.mannequin.doll.success.multiple": "Turned %s players into dolls",
+	"command.mannequin.sever.limbType.leg": "%s leg",
+	"command.mannequin.sever.limbType.arm": "%s arm",
+	"command.mannequin.sever.limbType.torso": "torso",
+	"command.mannequin.sever.limbOrientation.left": "left",
+	"command.mannequin.sever.limbOrientation.right": "right",
+	"command.mannequin.sever.success.single": "Severed %s's %s",
+	"command.mannequin.sever.success.multiple": "Severed the %s of %s players"
 }
