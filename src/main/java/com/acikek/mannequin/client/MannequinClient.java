@@ -71,7 +71,7 @@ public class MannequinClient implements ClientModInitializer {
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateLimb.TYPE, (payload, context) -> {
-			var entity = context.player().level().getEntity(payload.entityId());
+			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
 			if (entity instanceof MannequinEntity mannequinEntity) {
 				var limb = mannequinEntity.mannequin$getData().limbs.resolve(payload.limb().type, payload.limb().orientation);
 				if (payload.limb().severed) {

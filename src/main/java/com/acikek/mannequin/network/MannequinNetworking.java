@@ -69,12 +69,12 @@ public class MannequinNetworking {
 		}
 	}
 
-	public record UpdateLimb(int entityId, boolean mainHand, MannequinLimb limb) implements CustomPacketPayload {
+	public record UpdateLimb(OptionalInt entityId, boolean mainHand, MannequinLimb limb) implements CustomPacketPayload {
 
 		public static final Type<UpdateLimb> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_limb"));
 
 		public static final StreamCodec<FriendlyByteBuf, UpdateLimb> STREAM_CODEC = StreamCodec.composite(
-			ByteBufCodecs.INT, UpdateLimb::entityId,
+			ByteBufCodecs.OPTIONAL_VAR_INT, UpdateLimb::entityId,
 			ByteBufCodecs.BOOL, UpdateLimb::mainHand,
 			MannequinLimb.STREAM_CODEC, UpdateLimb::limb,
 			UpdateLimb::new
@@ -156,13 +156,7 @@ public class MannequinNetworking {
 					ServerPlayNetworking.send(watcher, watcherPayload);
 				}
 			}
-			else if (result.severedLimb() != null) {
-				var watcherPayload = new UpdateLimb(context.player().getId(), payload.mainHand(), result.severedLimb());
-				for (var watcher : PlayerLookup.tracking(context.player())) {
-					ServerPlayNetworking.send(watcher, watcherPayload);
-				}
-			}
-			else {
+			else if (result.severedLimb() == null) {
 				stopSevering(context.player(), mannequinEntity, true);
 			}
 		});

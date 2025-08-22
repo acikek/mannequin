@@ -231,6 +231,10 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			drop.add(mannequin$getItemBySlot(EquipmentSlot.CHEST));
 			setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
 		}
+		var limbStack = limb.getLimbItemStack(player);
+		if (!limbStack.isEmpty()) {
+			drop.add(limbStack);
+		}
 		for (var stack : drop) {
 			if (!stack.isEmpty()) {
 				var entity = createItemStackToDrop(stack, false, false);
@@ -239,14 +243,18 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 				}
 			}
 		}
-		var limbStack = limb.getLimbItemStack(player);
-		if (!limbStack.isEmpty()) {
-			player.addItem(limbStack);
-		}
 		getItemInHand(hand).hurtAndBreak(5, (LivingEntity) (Object) this, hand);
-		mannequin$stopSevering();
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(MannequinSounds.LIMB_SNAP);
+		if (((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer) {
+			boolean mainHand = data.severingHand == InteractionHand.MAIN_HAND;
+			ServerPlayNetworking.send(serverPlayer, new MannequinNetworking.UpdateLimb(OptionalInt.empty(), mainHand, limb));
+			var watcherPayload = new MannequinNetworking.UpdateLimb(OptionalInt.of(serverPlayer.getId()), mainHand, limb);
+			for (var watcher : PlayerLookup.tracking(serverPlayer)) {
+				ServerPlayNetworking.send(watcher, watcherPayload);
+			}
+		}
+		mannequin$stopSevering();
 	}
 
 	@Unique
@@ -265,7 +273,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(SoundEvents.WOOD_PLACE);
 		if (((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer) {
-			var watcherPayload = new MannequinNetworking.UpdateLimb(serverPlayer.getId(), false, limb);
+			var watcherPayload = new MannequinNetworking.UpdateLimb(OptionalInt.of(serverPlayer.getId()), false, limb);
 			for (var watcher : PlayerLookup.tracking(serverPlayer)) {
 				ServerPlayNetworking.send(watcher, watcherPayload);
 			}
