@@ -84,6 +84,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		mannequin$tickDamage();
 		if (data.severing) {
 			data.severingTicksRemaining--;
+			data.severingTicksElapsed++;
 			if (data.severingTicksRemaining <= 0) {
 				mannequin$sever();
 			}
@@ -196,6 +197,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		data.severingLimb = null;
 		data.severingHand = null;
 		data.severingTicksRemaining = 0;
+		data.severingTicksElapsed = 0;
 		data.damageTicksElapsed = 0;
 		var attribute = getAttribute(Attributes.MOVEMENT_SPEED);
 		if (attribute != null) {

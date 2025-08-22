@@ -54,7 +54,7 @@ public class HumanoidModelMixin<T extends HumanoidRenderState> {
 		}
 		var arm = right ? rightArm : leftArm;
 		boolean leg = mannequinRenderState.mannequin$getData().severingLimb.type == LimbType.LEG;
-		float h = mannequinRenderState.mannequin$getData().severingTicksRemaining % 10;
+		float h = (10 - mannequinRenderState.mannequin$getData().severingTicksElapsed) % 10;
 		float i = h - mannequinRenderState.mannequin$getDeltaTime() + 1.0F;
 		float j = 1.0F - i / 10.0F;
 		arm.xRot = Mth.cos(j * 2.0F * (float) Math.PI) * 0.3F;

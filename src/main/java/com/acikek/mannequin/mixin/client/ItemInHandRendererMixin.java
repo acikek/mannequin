@@ -48,7 +48,7 @@ public class ItemInHandRendererMixin {
 		poseStack.mulPose(Axis.XP.rotationDegrees(-102.25F));
 		poseStack.mulPose(Axis.YP.rotationDegrees(right * 13.365F));
 		poseStack.mulPose(Axis.ZP.rotationDegrees(right * 78.05F));
-		float h = mannequinEntity.mannequin$getData().severingTicksRemaining % 10;
+		float h = (10 - mannequinEntity.mannequin$getData().severingTicksElapsed) % 10;
 		float i = h - deltaTime + 1.0F;
 		float j = 1.0F - i / 10.0F;
 		float motion = 0.1F * Mth.cos(j * 2.0F * (float) Math.PI);

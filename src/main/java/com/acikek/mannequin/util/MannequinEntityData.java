@@ -18,12 +18,13 @@ public class MannequinEntityData {
 	public @Nullable MannequinLimb severingLimb;
 	public @Nullable InteractionHand severingHand;
 	public int severingTicksRemaining;
+	public int severingTicksElapsed;
 	public int damageTicksElapsed;
 	public int ticksToBleed;
 	public int totalBleedingTicks;
 	public boolean slim;
 
-	public MannequinEntityData(MannequinLimbs limbs, boolean severing, boolean doll, Optional<Integer> severingLimbIndex, Optional<Boolean> severingHandMain, int severingTicksRemaining, int damageTicksElapsed, int ticksToBleed, int totalBleedingTicks, boolean slim) {
+	public MannequinEntityData(MannequinLimbs limbs, boolean severing, boolean doll, Optional<Integer> severingLimbIndex, Optional<Boolean> severingHandMain, int severingTicksRemaining, int severingTicksElapsed, int damageTicksElapsed, int ticksToBleed, int totalBleedingTicks, boolean slim) {
 		this.limbs = limbs;
 		this.severing = severing;
 		this.doll = doll;
@@ -37,7 +38,7 @@ public class MannequinEntityData {
 	}
 
 	public MannequinEntityData() {
-		this(new MannequinLimbs(), false, false, Optional.empty(), Optional.empty(), 0, 0, 0, 0, false);
+		this(new MannequinLimbs(), false, false, Optional.empty(), Optional.empty(), 0, 0, 0, 0, 0, false);
 	}
 
 	public Optional<Integer> getSeveringLimbIndex() {
@@ -56,6 +57,7 @@ public class MannequinEntityData {
 			Codec.INT.optionalFieldOf("severing_limb_index").forGetter(MannequinEntityData::getSeveringLimbIndex),
 			Codec.BOOL.optionalFieldOf("severing_hand_main").forGetter(MannequinEntityData::getSeveringHandMain),
 			Codec.INT.fieldOf("severing_ticks_remaining").forGetter(data -> data.severingTicksRemaining),
+			Codec.INT.fieldOf("severing_ticks_elapsed").forGetter(data -> data.severingTicksElapsed),
 			Codec.INT.fieldOf("damage_ticks_remaining").forGetter(data -> data.damageTicksElapsed),
 			Codec.INT.fieldOf("ticks_to_bleed").forGetter(data -> data.ticksToBleed),
 			Codec.INT.fieldOf("total_bleeding_ticks").forGetter(data -> data.totalBleedingTicks),
@@ -74,6 +76,7 @@ public class MannequinEntityData {
 			", severingLimb=" + severingLimb +
 			", severingHand=" + severingHand +
 			", severingTicksRemaining=" + severingTicksRemaining +
+			", severingTicksElapsed=" + severingTicksElapsed +
 			", damageTicksElapsed=" + damageTicksElapsed +
 			", ticksToBleed=" + ticksToBleed +
 			", totalBleedingTicks=" + totalBleedingTicks +
