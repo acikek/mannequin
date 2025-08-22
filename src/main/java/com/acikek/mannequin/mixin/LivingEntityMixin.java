@@ -247,7 +247,7 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 		((LivingEntity) (Object) this).refreshDimensions();
 		makeSound(MannequinSounds.LIMB_SNAP);
 		if (((LivingEntity) (Object) this) instanceof ServerPlayer serverPlayer) {
-			boolean mainHand = data.severingHand == InteractionHand.MAIN_HAND;
+			boolean mainHand = hand == InteractionHand.MAIN_HAND;
 			ServerPlayNetworking.send(serverPlayer, new MannequinNetworking.UpdateLimb(OptionalInt.empty(), mainHand, limb));
 			var watcherPayload = new MannequinNetworking.UpdateLimb(OptionalInt.of(serverPlayer.getId()), mainHand, limb);
 			for (var watcher : PlayerLookup.tracking(serverPlayer)) {
