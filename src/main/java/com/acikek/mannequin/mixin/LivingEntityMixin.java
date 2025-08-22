@@ -73,6 +73,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@Shadow
 	public abstract void setItemSlot(EquipmentSlot equipmentSlot, ItemStack itemStack);
 
+	@Shadow
+	public abstract float getScale();
+
 	@Unique
 	private MannequinEntityData data = new MannequinEntityData();
 
@@ -125,10 +128,10 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	@ModifyReturnValue(method = "getDimensions", at = @At("RETURN"))
 	private EntityDimensions mannequin$resize(EntityDimensions original) {
 		if (data.limbs.torso().severed) {
-			return Mannequin.HEAD_ONLY_DIMENSIONS;
+			return Mannequin.HEAD_ONLY_DIMENSIONS.scale(getScale());
 		}
 		if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
-			return Mannequin.LEGLESS_DIMENSIONS;
+			return Mannequin.LEGLESS_DIMENSIONS.scale(getScale());
 		}
 		return original;
 	}
