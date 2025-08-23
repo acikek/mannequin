@@ -174,13 +174,11 @@ public class MannequinNetworking {
 		});
 		ServerPlayNetworking.registerGlobalReceiver(UpdateSlim.TYPE, (payload, context) -> {
 			if (context.player() instanceof MannequinEntity mannequinEntity) {
-				System.out.println("set slim = " + payload.slim());
 				mannequinEntity.mannequin$getData().slim = payload.slim();
 			}
 		});
 		ServerPlayNetworking.registerGlobalReceiver(RequestDataUpdate.TYPE, (payload, context) -> {
-			if (context.player().level().getEntity(payload.entityId()) instanceof MannequinEntity mannequinEntity) {
-				System.out.println("sending data via request, slim = " + mannequinEntity.mannequin$getData().slim);
+			if (context.player().level().getEntity(payload.entityId()) instanceof MannequinEntity mannequinEntity && mannequinEntity.mannequin$getData() != null) {
 				context.responseSender().sendPacket(new UpdateMannequinEntityData(OptionalInt.of(payload.entityId()), mannequinEntity.mannequin$getData()));
 			}
 		});

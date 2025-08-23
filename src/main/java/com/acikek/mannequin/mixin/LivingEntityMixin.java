@@ -22,6 +22,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.Nullable;
@@ -75,10 +76,20 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 	public abstract float getScale();
 
 	@Unique
-	private MannequinEntityData data = new MannequinEntityData();
+	private MannequinEntityData data;
+
+	@Inject(method = "<init>", at = @At("TAIL"))
+	private void mannequin$init(EntityType<?> entityType, Level level, CallbackInfo ci) {
+		if (((LivingEntity) (Object) this) instanceof Player) {
+			data = new MannequinEntityData();
+		}
+	}
 
 	@Inject(method = "tick", at = @At("HEAD"))
 	private void mannequin$tick(CallbackInfo ci) {
+		if (data == null) {
+			return;
+		}
 		mannequin$tickDamage();
 		if (data.severing) {
 			data.severingTicksRemaining--;
@@ -126,6 +137,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@ModifyReturnValue(method = "getDimensions", at = @At("RETURN"))
 	private EntityDimensions mannequin$resize(EntityDimensions original) {
+		if (data == null) {
+			return original;
+		}
 		if (data.limbs.torso().severed) {
 			return Mannequin.HEAD_ONLY_DIMENSIONS.scale(getScale());
 		}
@@ -137,6 +151,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Inject(method = "getItemInHand", at = @At("HEAD"), cancellable = true)
 	private void mannequin$getItemInHand(InteractionHand interactionHand, CallbackInfoReturnable<ItemStack> cir) {
+		if (data == null) {
+			return;
+		}
 		var arm = interactionHand == InteractionHand.MAIN_HAND ? getMainArm() : getMainArm().getOpposite();
 		if (data.limbs.getArm(arm).severed) {
 			cir.setReturnValue(ItemStack.EMPTY);
@@ -159,6 +176,9 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Unique
 	private boolean mannequin$isSlotSevered(EquipmentSlot equipmentSlot) {
+		if (data == null) {
+			return false;
+		}
 		if (data.limbs.torso().severed) {
 			return equipmentSlot != EquipmentSlot.HEAD;
 		}
@@ -304,14 +324,14 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 
 	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
 	private void mannequin$addSaveData(ValueOutput valueOutput, CallbackInfo ci) {
-		if (((LivingEntity) (Object) this) instanceof Player) {
+		if (data != null) {
 			valueOutput.store("mannequin$entity_data", MannequinEntityData.CODEC, data);
 		}
 	}
 
 	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
 	private void mannequin$readSaveData(ValueInput valueInput, CallbackInfo ci) {
-		if (((LivingEntity) (Object) this) instanceof Player) {
+		if (data != null) {
 			valueInput.read("mannequin$entity_data", MannequinEntityData.CODEC).ifPresent(data -> this.data = data);
 		}
 	}
