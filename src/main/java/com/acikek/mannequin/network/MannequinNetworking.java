@@ -1,15 +1,10 @@
 package com.acikek.mannequin.network;
 
 import com.acikek.mannequin.Mannequin;
-import com.acikek.mannequin.client.MannequinClient;
 import com.acikek.mannequin.util.LimbType;
 import com.acikek.mannequin.util.MannequinEntity;
 import com.acikek.mannequin.util.MannequinEntityData;
 import com.acikek.mannequin.util.MannequinLimb;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -28,14 +23,13 @@ import java.util.OptionalInt;
 
 public class MannequinNetworking {
 
-	public record StartSevering(OptionalInt entityId, boolean mainHand, boolean slim) implements CustomPacketPayload {
+	public record StartSevering(OptionalInt entityId, boolean mainHand) implements CustomPacketPayload {
 
 		public static final Type<StartSevering> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "start_severing"));
 
 		public static final StreamCodec<FriendlyByteBuf, StartSevering> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.OPTIONAL_VAR_INT, StartSevering::entityId,
 			ByteBufCodecs.BOOL, StartSevering::mainHand,
-			ByteBufCodecs.BOOL, StartSevering::slim,
 			StartSevering::new
 		);
 
@@ -102,6 +96,18 @@ public class MannequinNetworking {
 		}
 	}
 
+	public record UpdateSlim(boolean slim) implements CustomPacketPayload {
+
+		public static final Type<UpdateSlim> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_slim"));
+
+		public static final StreamCodec<FriendlyByteBuf, UpdateSlim> STREAM_CODEC = ByteBufCodecs.BOOL.map(UpdateSlim::new, UpdateSlim::slim).cast();
+
+		@Override
+		public @NotNull Type<? extends CustomPacketPayload> type() {
+			return TYPE;
+		}
+	}
+
 	public record UpdateMannequinEntityData(OptionalInt entityId, MannequinEntityData data) implements CustomPacketPayload {
 
 		public static final Type<UpdateMannequinEntityData> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "update_mannequin_entity_data"));
@@ -138,6 +144,7 @@ public class MannequinNetworking {
 		PayloadTypeRegistry.playS2C().register(StopSevering.TYPE, StopSevering.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateLimb.TYPE, UpdateLimb.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateDoll.TYPE, UpdateDoll.STREAM_CODEC);
+		PayloadTypeRegistry.playC2S().register(UpdateSlim.TYPE, UpdateSlim.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(UpdateMannequinEntityData.TYPE, UpdateMannequinEntityData.STREAM_CODEC);
 		PayloadTypeRegistry.playC2S().register(RequestDataUpdate.TYPE, RequestDataUpdate.STREAM_CODEC);
 		registerServer();
@@ -151,7 +158,7 @@ public class MannequinNetworking {
 			var result = tryStartSevering(payload, context.player(), mannequinEntity);
 			if (result.active()) {
 				context.responseSender().sendPacket(new UpdateSeveringTicksRemaining(result.ticks()));
-				var watcherPayload = new StartSevering(OptionalInt.of(context.player().getId()), payload.mainHand(), payload.slim());
+				var watcherPayload = new StartSevering(OptionalInt.of(context.player().getId()), payload.mainHand());
 				for (var watcher : PlayerLookup.tracking(context.player())) {
 					ServerPlayNetworking.send(watcher, watcherPayload);
 				}
@@ -165,8 +172,15 @@ public class MannequinNetworking {
 				stopSevering(context.player(), mannequinEntity, false);
 			}
 		});
+		ServerPlayNetworking.registerGlobalReceiver(UpdateSlim.TYPE, (payload, context) -> {
+			if (context.player() instanceof MannequinEntity mannequinEntity) {
+				System.out.println("set slim = " + payload.slim());
+				mannequinEntity.mannequin$getData().slim = payload.slim();
+			}
+		});
 		ServerPlayNetworking.registerGlobalReceiver(RequestDataUpdate.TYPE, (payload, context) -> {
 			if (context.player().level().getEntity(payload.entityId()) instanceof MannequinEntity mannequinEntity) {
+				System.out.println("sending data via request, slim = " + mannequinEntity.mannequin$getData().slim);
 				context.responseSender().sendPacket(new UpdateMannequinEntityData(OptionalInt.of(payload.entityId()), mannequinEntity.mannequin$getData()));
 			}
 		});
@@ -192,7 +206,6 @@ public class MannequinNetworking {
 		var stack = player.getItemInHand(hand);
 		var limbToSever = mannequinEntity.mannequin$getData().limbs.resolve(player, stack, hand);
 		if (limbToSever != null && !limbToSever.severed) {
-			mannequinEntity.mannequin$getData().slim = payload.slim();
 			if (mannequinEntity.mannequin$getData().doll && limbToSever.type != LimbType.TORSO) {
 				mannequinEntity.mannequin$sever(limbToSever, hand);
 				return new StartSeveringResult(false, 0, limbToSever);

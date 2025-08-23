@@ -71,8 +71,6 @@ public class MinecraftMixin {
 	@Inject(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/KeyMapping;consumeClick()Z", ordinal = 16))
 	private void mannequin$tryStartSevering(CallbackInfo ci) {
 		if (rightClickDelay == 0 && player instanceof MannequinEntity mannequinEntity && !player.isUsingItem() && limbToSever != null && severingHand != null) {
-			boolean slim = player.getSkin().model() == PlayerSkin.Model.SLIM;
-			mannequinEntity.mannequin$getData().slim = slim;
 			if (mannequinEntity.mannequin$getData().doll && limbToSever.type != LimbType.TORSO) {
 				mannequinEntity.mannequin$sever(limbToSever, severingHand);
 				player.swing(severingHand);
@@ -81,7 +79,7 @@ public class MinecraftMixin {
 				mannequinEntity.mannequin$startSevering(limbToSever, severingHand, Integer.MAX_VALUE);
 				MannequinClient.playSeveringSound(player);
 			}
-			ClientPlayNetworking.send(new MannequinNetworking.StartSevering(OptionalInt.empty(), severingHand == InteractionHand.MAIN_HAND, slim));
+			ClientPlayNetworking.send(new MannequinNetworking.StartSevering(OptionalInt.empty(), severingHand == InteractionHand.MAIN_HAND));
 		}
 	}
 

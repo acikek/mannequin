@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -110,7 +111,12 @@ public class MannequinClient implements ClientModInitializer {
 			}
 		});
 		ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-			if (entity instanceof Player && entity instanceof MannequinEntity) {
+			if (entity instanceof Player && entity instanceof MannequinEntity mannequinEntity) {
+				if (entity == Minecraft.getInstance().player) {
+					boolean slim = Minecraft.getInstance().player.getSkin().model() == PlayerSkin.Model.SLIM;
+					mannequinEntity.mannequin$getData().slim = slim;
+					ClientPlayNetworking.send(new MannequinNetworking.UpdateSlim(slim));
+				}
 				ClientPlayNetworking.send(new MannequinNetworking.RequestDataUpdate(entity.getId()));
 			}
 		});
