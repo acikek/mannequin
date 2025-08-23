@@ -11,6 +11,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.HumanoidArm;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.IntFunction;
@@ -42,6 +43,10 @@ public enum LimbOrientation implements StringRepresentable {
 	@Override
 	public @NotNull String getSerializedName() {
 		return name;
+	}
+
+	public HumanoidArm getHumanoidArm() {
+		return this == RIGHT ? HumanoidArm.RIGHT : HumanoidArm.LEFT;
 	}
 
 	public record Predicate(LimbOrientation orientation) implements SingleComponentItemPredicate<LimbOrientation> {

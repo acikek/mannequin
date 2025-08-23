@@ -216,18 +216,22 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			setItemInHand(severedHand, ItemStack.EMPTY);
 		}
 		else if (limb.type == LimbType.TORSO) {
-			if (!data.limbs.leftArm().severed) {
-				mannequin$severTorsoArm(player, data.limbs.leftArm(), drop);
+			for (var part : data.limbs.getParts()) {
+				if (part.type == LimbType.TORSO || part.severed) {
+					continue;
+				}
+				part.severed = true;
+				drop.add(part.getLimbItemStack(player));
+				if (part.type == LimbType.ARM) {
+					var partHand = getMainArm() == part.orientation.getHumanoidArm() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+					drop.add(mannequin$getItemInHand(partHand));
+					setItemInHand(partHand, ItemStack.EMPTY);
+				}
 			}
-			if (!data.limbs.rightArm().severed) {
-				mannequin$severTorsoArm(player, data.limbs.rightArm(), drop);
-			}
-			data.limbs.leftLeg().severed = true;
-			data.limbs.rightLeg().severed = true;
 			drop.add(mannequin$getItemBySlot(EquipmentSlot.CHEST));
 			setItemSlot(EquipmentSlot.CHEST, ItemStack.EMPTY);
 		}
-		if (data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
+		if ((limb.type == LimbType.TORSO || limb.type == LimbType.LEG) && data.limbs.leftLeg().severed && data.limbs.rightLeg().severed) {
 			drop.add(mannequin$getItemBySlot(EquipmentSlot.FEET));
 			drop.add(mannequin$getItemBySlot(EquipmentSlot.LEGS));
 			setItemSlot(EquipmentSlot.FEET, ItemStack.EMPTY);
@@ -257,15 +261,6 @@ public abstract class LivingEntityMixin implements MannequinEntity {
 			}
 		}
 		mannequin$stopSevering();
-	}
-
-	@Unique
-	private void mannequin$severTorsoArm(Player player, MannequinLimb armLimb, List<ItemStack> drop) {
-		armLimb.severed = true;
-		var hand = getMainArm() == (armLimb.orientation == LimbOrientation.RIGHT ? HumanoidArm.RIGHT : HumanoidArm.LEFT) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-		drop.add(armLimb.getLimbItemStack(player));
-		drop.add(mannequin$getItemInHand(hand));
-		setItemInHand(hand, ItemStack.EMPTY);
 	}
 
 	@Override
