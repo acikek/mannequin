@@ -17,7 +17,7 @@ public class MannequinItems {
 	public static final LimbItem LEG = new LimbItem(LimbItem.PROPERTIES.setId(LEG_KEY), LimbType.LEG);
 
 	public static final ResourceKey<Item> ARM_KEY = ResourceKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "arm"));
-	public static final LimbItem ARM = new LimbItem(new Item.Properties().setId(ARM_KEY), LimbType.ARM);
+	public static final LimbItem ARM = new LimbItem(LimbItem.PROPERTIES.setId(ARM_KEY), LimbType.ARM);
 
 	public static final TagKey<Item> SEVERS_LEGS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "severs_legs"));
 	public static final TagKey<Item> SEVERS_ARMS = TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(Mannequin.MOD_ID, "severs_arms"));
