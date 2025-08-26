@@ -37,10 +37,10 @@ public class PlayerRendererMixin {
 
 	@Inject(method = "<init>", at = @At("TAIL"))
 	private void mannequin$addBloodRenderer(EntityRendererProvider.Context context, boolean bl, CallbackInfo ci) {
-		((LivingEntityRendererAccessor<AbstractClientPlayer, PlayerRenderState, PlayerModel>) this).callAddLayer(new PlayerBloodLayer((PlayerRenderer) (Object) this));
-		((LivingEntityRendererAccessor<AbstractClientPlayer, PlayerRenderState, PlayerModel>) this).callAddLayer(new CustomLimbsLayer((PlayerRenderer) (Object) this, context));
 		wide = new PlayerModel(context.bakeLayer(ModelLayers.PLAYER), false);
 		slim = new PlayerModel(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
+		//((LivingEntityRendererAccessor<AbstractClientPlayer, PlayerRenderState, PlayerModel>) this).callAddLayer(new PlayerBloodLayer((PlayerRenderer) (Object) this));
+		((LivingEntityRendererAccessor<AbstractClientPlayer, PlayerRenderState, PlayerModel>) this).callAddLayer(new CustomLimbsLayer((PlayerRenderer) (Object) this, wide, slim));
 	}
 
 	@Inject(method = "extractRenderState(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/client/renderer/entity/state/PlayerRenderState;F)V", at = @At("TAIL"))

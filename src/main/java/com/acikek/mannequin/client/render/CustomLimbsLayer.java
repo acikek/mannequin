@@ -20,10 +20,10 @@ public class CustomLimbsLayer extends RenderLayer<PlayerRenderState, PlayerModel
 	public PlayerModel wide;
 	public PlayerModel slim;
 
-	public CustomLimbsLayer(RenderLayerParent<PlayerRenderState, PlayerModel> renderLayerParent, EntityRendererProvider.Context context) {
+	public CustomLimbsLayer(RenderLayerParent<PlayerRenderState, PlayerModel> renderLayerParent, PlayerModel wide, PlayerModel slim) {
 		super(renderLayerParent);
-		wide = new PlayerModel(context.bakeLayer(ModelLayers.PLAYER), false);
-		slim = new PlayerModel(context.bakeLayer(ModelLayers.PLAYER_SLIM), true);
+		this.wide = wide;
+		this.slim = slim;
 	}
 
 	@Override
