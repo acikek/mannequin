@@ -10,6 +10,7 @@ import com.acikek.mannequin.util.LimbType;
 import com.acikek.mannequin.util.MannequinEntity;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.minecraft.client.Minecraft;
@@ -110,13 +111,15 @@ public class MannequinClient implements ClientModInitializer {
 				entity.refreshDimensions();
 			}
 		});
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+			if (client.player instanceof MannequinEntity mannequinEntity) {
+				boolean slim = client.player.getSkin().model() == PlayerSkin.Model.SLIM;
+				mannequinEntity.mannequin$getData().slim = slim;
+				sender.sendPacket(new MannequinNetworking.UpdateSlim(slim));
+			}
+		});
 		ClientEntityEvents.ENTITY_LOAD.register((entity, world) -> {
-			if (entity instanceof Player && entity instanceof MannequinEntity mannequinEntity) {
-				if (entity == Minecraft.getInstance().player) {
-					boolean slim = Minecraft.getInstance().player.getSkin().model() == PlayerSkin.Model.SLIM;
-					mannequinEntity.mannequin$getData().slim = slim;
-					ClientPlayNetworking.send(new MannequinNetworking.UpdateSlim(slim));
-				}
+			if (entity instanceof Player && entity instanceof MannequinEntity) {
 				ClientPlayNetworking.send(new MannequinNetworking.RequestDataUpdate(entity.getId()));
 			}
 		});
