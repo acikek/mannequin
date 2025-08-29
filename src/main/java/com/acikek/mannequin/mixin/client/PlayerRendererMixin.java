@@ -49,14 +49,16 @@ public class PlayerRendererMixin {
 			mannequinRenderState.mannequin$setData(mannequinEntity.mannequin$getData());
 			mannequinRenderState.mannequin$setProfile(abstractClientPlayer.getGameProfile());
 			mannequinRenderState.mannequin$setDeltaTime(f);
-			if (playerRenderState.nameTagAttachment == null) {
-				return;
+			if (playerRenderState.nameTagAttachment != null) {
+				if (mannequinEntity.mannequin$getData().limbs.torso().severed) {
+					playerRenderState.nameTagAttachment = playerRenderState.nameTagAttachment.add(0.0, 1.55 * playerRenderState.scale, 0.0);
+				}
+				else if (mannequinEntity.mannequin$getData().limbs.leftLeg().severed && mannequinEntity.mannequin$getData().limbs.rightLeg().severed) {
+					playerRenderState.nameTagAttachment = playerRenderState.nameTagAttachment.add(0.0, 0.65 * playerRenderState.scale, 0.0);
+				}
 			}
 			if (mannequinEntity.mannequin$getData().limbs.torso().severed) {
-				playerRenderState.nameTagAttachment = playerRenderState.nameTagAttachment.add(0.0, 1.55 * playerRenderState.scale, 0.0);
-			}
-			else if (mannequinEntity.mannequin$getData().limbs.leftLeg().severed && mannequinEntity.mannequin$getData().limbs.rightLeg().severed) {
-				playerRenderState.nameTagAttachment = playerRenderState.nameTagAttachment.add(0.0, 0.65 * playerRenderState.scale, 0.0);
+				playerRenderState.showCape = false;
 			}
 		}
 	}
