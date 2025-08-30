@@ -37,10 +37,10 @@ public class CustomLimbsLayer extends RenderLayer<PlayerRenderState, PlayerModel
 		slim.setupAnim(entityRenderState);
 		mannequinRenderState.mannequin$setData(data);
 		for (var limb : mannequinRenderState.mannequin$getData().limbs.getParts()) {
-			if (limb.severed || (limb.profile.isPresent() && limb.profile.get().gameProfile().equals(mannequinRenderState.mannequin$getProfile()))) {
+			if (limb.severed || limb.profile.isEmpty()) {
 				continue;
 			}
-			var skin = limb.profile.isPresent() && limb.profile.get().isResolved()
+			var skin = limb.profile.get().isResolved()
 				? Minecraft.getInstance().getSkinManager().getInsecureSkin(limb.profile.get().gameProfile(), null)
 				: DefaultPlayerSkin.getDefaultSkin();
 			if (skin == null) {

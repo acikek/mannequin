@@ -15,6 +15,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +53,9 @@ public class LimbItem extends Item {
 		if (limbToAttach == null || !limbToAttach.severed) {
 			return super.use(level, player, interactionHand);
 		}
-		limbToAttach.profile = Optional.ofNullable(stack.get(DataComponents.PROFILE));
+		limbToAttach.profile = Optional.ofNullable(stack.get(DataComponents.PROFILE))
+			.filter(ResolvableProfile::isResolved)
+			.filter(profile -> !profile.gameProfile().equals(player.getGameProfile()));
 		limbToAttach.slim = Optional.ofNullable(stack.get(SLIM_COMPONENT_TYPE));
 		mannequinEntity.mannequin$attach(limbToAttach);
 		player.awardStat(Stats.ITEM_USED.get(this));

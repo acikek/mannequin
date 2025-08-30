@@ -82,8 +82,8 @@ public class MannequinLimb {
 		return -1;
 	}
 
-	public boolean isBaseVisible(GameProfile profile) {
-		return !severed && (this.profile.isEmpty() || this.profile.get().gameProfile().equals(profile));
+	public boolean isBaseVisible() {
+		return !severed && this.profile.isEmpty();
 	}
 
 	@Override

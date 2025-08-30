@@ -19,6 +19,7 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.ResolvableProfile;
 
 public class MannequinClient implements ClientModInitializer {
 
@@ -73,23 +74,24 @@ public class MannequinClient implements ClientModInitializer {
 		});
 		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateLimb.TYPE, (payload, context) -> {
 			var entity = payload.entityId().isPresent() ? context.player().level().getEntity(payload.entityId().getAsInt()) : context.player();
-			if (entity instanceof MannequinEntity mannequinEntity) {
-				var limb = mannequinEntity.mannequin$getData().limbs.resolve(payload.limb().type, payload.limb().orientation);
-				if (limb == null) {
-					return;
-				}
-				if (payload.limb().severed) {
-					var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-					mannequinEntity.mannequin$sever(limb, hand);
-					if (entity instanceof Player player) {
-						player.swing(hand);
-					}
-				}
-				else if (payload.limb().profile.isPresent()) {
-					limb.profile = payload.limb().profile;
-					limb.slim = payload.limb().slim;
-					mannequinEntity.mannequin$attach(limb);
-				}
+			if (!(entity instanceof Player player) || !(entity instanceof MannequinEntity mannequinEntity)) {
+				return;
+			}
+			var limb = mannequinEntity.mannequin$getData().limbs.resolve(payload.limb().type, payload.limb().orientation);
+			if (limb == null) {
+				return;
+			}
+			if (payload.limb().severed) {
+				var hand = payload.mainHand() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+				mannequinEntity.mannequin$sever(limb, hand);
+				player.swing(hand);
+			}
+			else {
+				limb.profile = payload.limb().profile
+					.filter(ResolvableProfile::isResolved)
+					.filter(profile -> !profile.gameProfile().equals(player.getGameProfile()));
+				limb.slim = payload.limb().slim;
+				mannequinEntity.mannequin$attach(limb);
 			}
 		});
 		ClientPlayNetworking.registerGlobalReceiver(MannequinNetworking.UpdateDoll.TYPE, (payload, context) -> {

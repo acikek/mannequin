@@ -45,14 +45,6 @@ public record MannequinLimbs(MannequinLimb leftLeg, MannequinLimb rightLeg, Mann
 		);
 	}
 
-	public void setProfile(Optional<ResolvableProfile> profile) {
-		leftLeg.profile = profile;
-		rightLeg.profile = profile;
-		leftArm.profile = profile;
-		rightArm.profile = profile;
-		torso.profile = profile;
-	}
-
 	public List<MannequinLimb> getParts() {
 		return List.of(leftLeg, rightLeg, leftArm, rightArm, torso);
 	}
