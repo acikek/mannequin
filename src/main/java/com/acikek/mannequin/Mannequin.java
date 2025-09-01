@@ -4,9 +4,11 @@ import com.acikek.mannequin.command.MannequinCommand;
 import com.acikek.mannequin.item.MannequinItems;
 import com.acikek.mannequin.network.MannequinNetworking;
 import com.acikek.mannequin.sound.MannequinSounds;
+import com.acikek.mannequin.util.MannequinEntity;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -36,6 +38,11 @@ public class Mannequin implements ModInitializer {
 		MannequinNetworking.register();
 		CommandRegistrationCallback.EVENT.register((commandDispatcher, commandBuildContext, commandSelection) -> {
 			MannequinCommand.register(commandDispatcher);
+		});
+		ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
+			if (oldPlayer instanceof MannequinEntity oldMannequinEntity && newPlayer instanceof MannequinEntity newMannequinEntity) {
+				newMannequinEntity.mannequin$getData().slim = oldMannequinEntity.mannequin$getData().slim;
+			}
 		});
 	}
 }
